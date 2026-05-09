@@ -8,6 +8,64 @@ import FAQ from "./components/FAQ";
 
 export default function Home() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [inputText, setInputText] = useState("");
+  const [humanizedText, setHumanizedText] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [copySuccess, setCopySuccess] = useState(false);
+
+  const handleHumanize = async () => {
+    if (!inputText.trim()) {
+      setError("Please enter some text to humanize");
+      return;
+    }
+
+    setIsLoading(true);
+    setError("");
+    setHumanizedText("");
+
+    try {
+      const response = await fetch('/api/humanize', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: inputText }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to humanize text');
+      }
+
+      setHumanizedText(data.humanizedText);
+    } catch (err: any) {
+      setError(err.message || 'Something went wrong');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePaste = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      setInputText(text);
+    } catch (err) {
+      setError("Failed to paste from clipboard");
+    }
+  };
+
+  const handleCopyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(humanizedText);
+      setCopySuccess(true);
+      // Reset success message after 2 seconds
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (err) {
+      setError("Failed to copy to clipboard");
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -17,7 +75,7 @@ export default function Home() {
 
       <main>
         {/* Hero Section */}
-        <div className="bg-amber-100 py-16">
+        <div className="bg-amber-50 py-16">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4" style={{ fontFamily: 'var(--font-bungee)' }}>
@@ -33,11 +91,23 @@ export default function Home() {
               <textarea
                 placeholder="Type, paste, or upload your text files."
                 className="w-full h-32 p-4 text-gray-700 border-0 resize-none focus:outline-none"
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
               />
+
+              {/* Error Message */}
+              {error && (
+                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-600">{error}</p>
+                </div>
+              )}
 
               {/* Action Buttons */}
               <div className="flex items-center justify-center gap-4 pt-6 pb-4 border-t border-gray-200">
-                <button className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                <button
+                  onClick={handlePaste}
+                  className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
@@ -53,11 +123,77 @@ export default function Home() {
 
               {/* Bottom Actions */}
               <div className="flex items-center justify-end pt-4">
-                <button className="px-8 py-2.5 text-sm font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors">
-                  Monkify →
+                <button
+                  onClick={handleHumanize}
+                  disabled={isLoading || !inputText.trim()}
+                  className="px-8 py-2.5 text-sm font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {isLoading ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Humanizing...
+                    </>
+                  ) : (
+                    'Monkify →'
+                  )}
                 </button>
               </div>
             </div>
+
+            {/* Humanized Result */}
+            {humanizedText && (
+              <div className="mt-8 bg-white rounded-2xl shadow-lg p-8">
+                <div className="flex items-center gap-3 mb-4 pb-4 border-b border-orange-300">
+                  <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="#FFB02E" stroke="#F97316" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xs font-bold text-orange-700 uppercase tracking-wider" style={{ fontFamily: 'var(--font-bungee)' }}>
+                    Humanized Result
+                  </h3>
+                </div>
+                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap" style={{ fontFamily: 'var(--font-fredoka)' }}>
+                  {humanizedText}
+                </p>
+                <div className="mt-4 flex gap-3">
+                  <button
+                    onClick={handleCopyToClipboard}
+                    className="px-4 py-2 text-sm font-medium text-orange-600 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors flex items-center gap-2"
+                  >
+                    {copySuccess ? (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        Copied!
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        Copy to Clipboard
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setInputText("");
+                      setHumanizedText("");
+                      setError("");
+                      setCopySuccess(false);
+                    }}
+                    className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    Start Over
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Double-checked with logos - Outside the box */}
             <div className="mt-6 flex flex-col gap-3">

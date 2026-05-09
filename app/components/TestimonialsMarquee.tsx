@@ -53,10 +53,12 @@ export default function TestimonialsMarquee() {
                 className="flex gap-6"
                 style={{
                     animation: 'marquee 20s linear infinite',
-                    willChange: 'transform'
+                    willChange: 'transform',
+                    backfaceVisibility: 'hidden',
+                    perspective: 1000,
+                    WebkitFontSmoothing: 'antialiased',
+                    MozOsxFontSmoothing: 'grayscale'
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.animationPlayState = 'paused'}
-                onMouseLeave={(e) => e.currentTarget.style.animationPlayState = 'running'}
             >
                 {/* First set */}
                 {testimonials.map((testimonial, index) => (

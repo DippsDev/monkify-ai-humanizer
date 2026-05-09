@@ -36,7 +36,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${bungee.variable} ${fredoka.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${bungee.variable} ${fredoka.variable} h-full`}
     >
       <body className="min-h-full flex flex-col" style={{ fontFamily: 'var(--font-fredoka)' }}>{children}</body>
     </html>

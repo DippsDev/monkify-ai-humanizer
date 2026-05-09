@@ -8,7 +8,7 @@ interface NavbarProps {
 
 export default function Navbar({ onLoginClick }: NavbarProps) {
     return (
-        <nav className="w-full bg-amber-100">
+        <nav className="w-full bg-amber-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
                     {/* Logo/Brand */}
