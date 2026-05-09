@@ -1,36 +1,149 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🐵 Monkify
 
-## Getting Started
+**Monkify** is a modern web application designed to help students improve their writing by detecting AI-generated content and humanizing text to sound more natural and authentic.
 
-First, run the development server:
+## ✨ Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **🤖 AI Detector** - Analyze text to identify AI-generated content with detailed breakdowns
+- **✍️ AI Humanizer** - Transform AI text into natural, human-sounding writing
+- **📝 Plagiarism Checker** - Scan work for similarities and avoid duplicate content
+- **💬 AI Chat** - Get writing assistance, improve drafts, and refine ideas
+- **🎯 Real-time Analysis** - See exactly which parts of your text need improvement
+- **🔒 Privacy First** - Your text is never stored or shared
+
+## 🎨 Design
+
+Monkify features a clean, modern design with:
+- **Amber/Orange Theme** - Warm, inviting color palette
+- **Custom Typography** - Bungee font for headings, Fredoka for body text
+- **Smooth Animations** - Marquee testimonials and accordion FAQs
+- **Responsive Layout** - Works seamlessly on desktop and mobile
+
+## 🚀 Tech Stack
+
+- **Framework**: [Next.js 16](https://nextjs.org/) with App Router
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS v4
+- **Fonts**: Custom local fonts (Bungee, Fredoka)
+- **Deployment**: Optimized for Vercel
+
+## 📦 Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/monkify.git
+   cd monkify
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Run the development server**
+   ```bash
+   npm run dev
+   ```
+
+4. **Open your browser**
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+## 🛠️ Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm start` - Start production server
+- `npm run lint` - Run ESLint
+
+## 📁 Project Structure
+
+```
+monkify/
+├── app/
+│   ├── components/
+│   │   ├── Navbar.tsx              # Navigation bar
+│   │   ├── LoginModal.tsx          # Login modal component
+│   │   ├── TestimonialsMarquee.tsx # Scrolling testimonials
+│   │   └── FAQ.tsx                 # Accordion FAQ section
+│   ├── signup/
+│   │   └── page.tsx                # Sign up page
+│   ├── layout.tsx                  # Root layout
+│   ├── page.tsx                    # Home page
+│   └── globals.css                 # Global styles
+├── public/
+│   └── fonts/                      # Custom fonts
+└── README.md
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🎯 Key Sections
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Hero Section
+- Eye-catching headline with call-to-action
+- Text input area with file upload
+- Trusted by indicators (Originality.ai, Scribbr, GPTZero)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Before/After Comparison
+- Visual demonstration of AI vs humanized text
+- Color-coded highlights for easy understanding
 
-## Learn More
+### AI Detection Demo
+- Live analysis report with percentage breakdowns
+- Visual progress indicators
 
-To learn more about Next.js, take a look at the following resources:
+### Testimonials
+- Animated marquee with student reviews
+- Pause on hover functionality
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Features Grid
+- Four main features with icons
+- Clean card-based layout
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### FAQ Section
+- Expandable accordion with smooth animations
+- Common questions about AI detection and humanization
 
-## Deploy on Vercel
+## 🎨 Color Palette
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Primary**: Amber/Orange (`#F97316`, `#FED7AA`)
+- **Background**: White to Amber gradient
+- **Text**: Gray scale (`#111827`, `#6B7280`)
+- **Accents**: Orange (`#EA580C`)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🔤 Typography
+
+- **Headings**: Bungee (Bold, Display)
+- **Body**: Fredoka (Variable weight)
+
+## 🌐 Pages
+
+- **/** - Landing page with all sections
+- **/signup** - Dedicated sign-up page with full form
+
+## 📱 Responsive Design
+
+Monkify is fully responsive with breakpoints for:
+- Mobile (< 768px)
+- Tablet (768px - 1024px)
+- Desktop (> 1024px)
+
+## 🤝 Contributing
+
+This is a personal learning project. Feel free to fork and experiment!
+
+## 📄 License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+## 👨‍💻 Author
+
+Built with ❤️ as a learning project to master web development.
+
+## 🙏 Acknowledgments
+
+- Design inspiration from modern SaaS landing pages
+- Custom fonts: Bungee and Fredoka from Google Fonts
+- Icons: Heroicons
+
+---
+
+**Note**: This is a frontend demonstration project. Backend functionality for AI detection and text humanization is not implemented.
