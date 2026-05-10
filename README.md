@@ -41,7 +41,7 @@ npm install
 1. Open `.env.local` in the root directory
 2. Add your API key:
    ```env
-   GEMINI_API_KEY=AIzaSyC...your_actual_key_here
+   GEMINI_API_KEY=...your_actual_key_here
    ```
 3. Save the file
 
