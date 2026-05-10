@@ -13,6 +13,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [copySuccess, setCopySuccess] = useState(false);
+  const [intensity, setIntensity] = useState<'light' | 'medium' | 'heavy'>('medium');
 
   const handleHumanize = async () => {
     if (!inputText.trim()) {
@@ -30,7 +31,7 @@ export default function Home() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text: inputText }),
+        body: JSON.stringify({ text: inputText, intensity }),
       });
 
       const data = await response.json();
@@ -122,7 +123,55 @@ export default function Home() {
               </div>
 
               {/* Bottom Actions */}
-              <div className="flex items-center justify-end pt-4">
+              <div className="flex items-center justify-between pt-4">
+                {/* Intensity Level Selector */}
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-gray-600 mr-2">Intensity:</span>
+
+                  {/* Light Button */}
+                  <button
+                    onClick={() => setIntensity('light')}
+                    className={`group relative px-4 py-2 text-xs font-medium rounded-lg transition-all duration-300 ${intensity === 'light'
+                        ? 'bg-orange-500 text-white shadow-md scale-105'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
+                      }`}
+                  >
+                    <span className="relative z-10">Light</span>
+                    {intensity === 'light' && (
+                      <div className="absolute inset-0 bg-orange-400 rounded-lg blur-sm opacity-50 animate-pulse"></div>
+                    )}
+                  </button>
+
+                  {/* Medium Button */}
+                  <button
+                    onClick={() => setIntensity('medium')}
+                    className={`group relative px-4 py-2 text-xs font-medium rounded-lg transition-all duration-300 ${intensity === 'medium'
+                        ? 'bg-orange-500 text-white shadow-md scale-105'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
+                      }`}
+                  >
+                    <span className="relative z-10">Medium</span>
+                    {intensity === 'medium' && (
+                      <div className="absolute inset-0 bg-orange-400 rounded-lg blur-sm opacity-50 animate-pulse"></div>
+                    )}
+                  </button>
+
+                  {/* Heavy Button */}
+                  <button
+                    onClick={() => setIntensity('heavy')}
+                    className={`group relative px-4 py-2 text-xs font-medium rounded-lg transition-all duration-300 ${intensity === 'heavy'
+                        ? 'bg-orange-500 text-white shadow-md scale-105'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
+                      }`}
+                  >
+                    <span className="relative z-10">Heavy</span>
+                    {intensity === 'heavy' && (
+                      <div className="absolute inset-0 bg-orange-400 rounded-lg blur-sm opacity-50 animate-pulse"></div>
+                    )}
+                  </button>
+                </div>
+
+                {/* Monkify Button */}
                 <button
                   onClick={handleHumanize}
                   disabled={isLoading || !inputText.trim()}
