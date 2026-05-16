@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
+import { AuthProvider } from "@/lib/auth/AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,7 +39,11 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${bungee.variable} ${fredoka.variable} h-full`}
     >
-      <body className="min-h-full flex flex-col" style={{ fontFamily: 'var(--font-fredoka)' }}>{children}</body>
+      <body className="min-h-full flex flex-col" style={{ fontFamily: 'var(--font-fredoka)' }}>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   );
 }

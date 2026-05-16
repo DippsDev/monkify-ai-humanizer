@@ -1,13 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth/AuthContext";
 import Navbar from "./components/Navbar";
 import LoginModal from "./components/LoginModal";
+import ForgotPasswordModal from "./components/ForgotPasswordModal";
 import TestimonialsMarquee from "./components/TestimonialsMarquee";
 import FAQ from "./components/FAQ";
 
 export default function Home() {
+  const router = useRouter();
+  const { user, loading } = useAuth();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
   const [inputText, setInputText] = useState("");
   const [humanizedText, setHumanizedText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -16,6 +22,16 @@ export default function Home() {
   const [intensity, setIntensity] = useState<'light' | 'medium' | 'heavy'>('medium');
 
   const handleHumanize = async () => {
+    // Check if user is authenticated
+    if (!user) {
+      setError("Please create an account or log in to use Monkify");
+      // Redirect to signup page after a short delay
+      setTimeout(() => {
+        router.push('/signup');
+      }, 1500);
+      return;
+    }
+
     if (!inputText.trim()) {
       setError("Please enter some text to humanize");
       return;
@@ -132,8 +148,8 @@ export default function Home() {
                   <button
                     onClick={() => setIntensity('light')}
                     className={`group relative px-4 py-2 text-xs font-medium rounded-lg transition-all duration-300 ${intensity === 'light'
-                        ? 'bg-orange-500 text-white shadow-md scale-105'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
+                      ? 'bg-orange-500 text-white shadow-md scale-105'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
                       }`}
                   >
                     <span className="relative z-10">Light</span>
@@ -146,8 +162,8 @@ export default function Home() {
                   <button
                     onClick={() => setIntensity('medium')}
                     className={`group relative px-4 py-2 text-xs font-medium rounded-lg transition-all duration-300 ${intensity === 'medium'
-                        ? 'bg-orange-500 text-white shadow-md scale-105'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
+                      ? 'bg-orange-500 text-white shadow-md scale-105'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
                       }`}
                   >
                     <span className="relative z-10">Medium</span>
@@ -160,8 +176,8 @@ export default function Home() {
                   <button
                     onClick={() => setIntensity('heavy')}
                     className={`group relative px-4 py-2 text-xs font-medium rounded-lg transition-all duration-300 ${intensity === 'heavy'
-                        ? 'bg-orange-500 text-white shadow-md scale-105'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
+                      ? 'bg-orange-500 text-white shadow-md scale-105'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
                       }`}
                   >
                     <span className="relative z-10">Heavy</span>
@@ -174,8 +190,9 @@ export default function Home() {
                 {/* Monkify Button */}
                 <button
                   onClick={handleHumanize}
-                  disabled={isLoading || !inputText.trim()}
+                  disabled={isLoading || !inputText.trim() || loading}
                   className="px-8 py-2.5 text-sm font-medium text-white bg-orange-500 rounded-lg hover:bg-orange-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
+                  title={!user && !loading ? "Please log in or sign up to use Monkify" : ""}
                 >
                   {isLoading ? (
                     <>
@@ -647,6 +664,20 @@ export default function Home() {
         onSwitchToSignUp={() => {
           setIsLoginOpen(false);
           window.location.href = '/signup';
+        }}
+        onForgotPassword={() => {
+          setIsLoginOpen(false);
+          setIsForgotPasswordOpen(true);
+        }}
+      />
+
+      {/* Forgot Password Modal */}
+      <ForgotPasswordModal
+        isOpen={isForgotPasswordOpen}
+        onClose={() => setIsForgotPasswordOpen(false)}
+        onBackToLogin={() => {
+          setIsForgotPasswordOpen(false);
+          setIsLoginOpen(true);
         }}
       />
     </div>

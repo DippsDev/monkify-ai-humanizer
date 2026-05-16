@@ -48,6 +48,19 @@ body {
   }
 }
 
+/* Make password dots more visible */
+input[type="password"] {
+  font-family: Verdana, sans-serif;
+  letter-spacing: 0.125em;
+  font-size: 16px;
+  color: #111827;
+}
+
+input[type="password"]::placeholder {
+  letter-spacing: normal;
+  font-family: var(--font-fredoka), sans-serif;
+}
+
 .animate-fadeIn {
   animation: fadeIn 0.6s ease-out forwards;
   opacity: 0;
