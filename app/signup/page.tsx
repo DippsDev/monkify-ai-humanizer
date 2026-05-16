@@ -248,7 +248,7 @@ export default function SignUpPage() {
                                 required
                                 disabled={loading}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-900 font-medium"
-                                style={{ WebkitTextSecurity: 'disc' }}
+                                style={{ WebkitTextSecurity: 'disc' } as React.CSSProperties}
                                 placeholder="••••••••"
                             />
                         </div>
@@ -265,7 +265,7 @@ export default function SignUpPage() {
                                 required
                                 disabled={loading}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-900 font-medium"
-                                style={{ WebkitTextSecurity: 'disc' }}
+                                style={{ WebkitTextSecurity: 'disc' } as React.CSSProperties}
                                 placeholder="••••••••"
                             />
                         </div>
