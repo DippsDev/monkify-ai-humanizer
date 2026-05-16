@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import { createClient } from '@/lib/supabase/client';
 
 interface SignUpModalProps {
     isOpen: boolean;
@@ -13,6 +14,8 @@ export default function SignUpModal({ isOpen, onClose, onSwitchToLogin }: SignUp
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [message, setMessage] = useState<string | null>(null);
@@ -37,30 +40,128 @@ export default function SignUpModal({ isOpen, onClose, onSwitchToLogin }: SignUp
             return;
         }
 
-        // Placeholder for authentication logic
-        // TODO: Implement sign up
-        setMessage('Sign up functionality coming soon!');
-        setLoading(false);
+        try {
+            const supabase = createClient();
+
+            const { data, error: signUpError } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        full_name: name,
+                    },
+                    emailRedirectTo: `${window.location.origin}/auth/callback`,
+                },
+            });
+
+            console.log('Signup response:', { data, error: signUpError });
+
+            if (signUpError) {
+                setError(signUpError.message);
+                setLoading(false);
+                return;
+            }
+
+            if (data.user) {
+                // Check if email confirmation is required
+                if (data.user.identities && data.user.identities.length === 0) {
+                    setError('This email is already registered. Please login instead.');
+                    setLoading(false);
+                    return;
+                }
+
+                // Check if user needs to confirm email
+                const needsEmailConfirmation = data.user.confirmed_at === null;
+
+                console.log('User created:', {
+                    email: data.user.email,
+                    needsEmailConfirmation,
+                    confirmed_at: data.user.confirmed_at
+                });
+
+                if (needsEmailConfirmation) {
+                    setMessage('Account created! Please check your email to verify your account before logging in.');
+                    // Clear form
+                    setName('');
+                    setEmail('');
+                    setPassword('');
+                    setConfirmPassword('');
+
+                    // Close modal after 3 seconds
+                    setTimeout(() => {
+                        onClose();
+                    }, 3000);
+                } else {
+                    // User is automatically logged in, redirect to homepage immediately
+                    console.log('Redirecting to homepage...');
+
+                    // Clear form
+                    setName('');
+                    setEmail('');
+                    setPassword('');
+                    setConfirmPassword('');
+
+                    // Close modal and redirect immediately
+                    onClose();
+                    window.location.href = '/';
+                }
+            } else {
+                setError('Failed to create account. Please try again.');
+            }
+        } catch (err) {
+            setError('An unexpected error occurred. Please try again.');
+            console.error('Sign up error:', err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleGoogleSignUp = async () => {
         setLoading(true);
         setError(null);
 
-        // Placeholder for Google OAuth
-        // TODO: Implement Google authentication
-        setMessage('Google sign up coming soon!');
-        setLoading(false);
+        try {
+            const supabase = createClient();
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: `${window.location.origin}/auth/callback`,
+                },
+            });
+
+            if (error) {
+                setError(error.message);
+            }
+        } catch (err) {
+            setError('An unexpected error occurred. Please try again.');
+            console.error('Google sign up error:', err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleGithubSignUp = async () => {
         setLoading(true);
         setError(null);
 
-        // Placeholder for GitHub OAuth
-        // TODO: Implement GitHub authentication
-        setMessage('GitHub sign up coming soon!');
-        setLoading(false);
+        try {
+            const supabase = createClient();
+            const { error } = await supabase.auth.signInWithOAuth({
+                provider: 'github',
+                options: {
+                    redirectTo: `${window.location.origin}/auth/callback`,
+                },
+            });
+
+            if (error) {
+                setError(error.message);
+            }
+        } catch (err) {
+            setError('An unexpected error occurred. Please try again.');
+            console.error('GitHub sign up error:', err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     if (!isOpen) return null;
@@ -117,7 +218,7 @@ export default function SignUpModal({ isOpen, onClose, onSwitchToLogin }: SignUp
                             onChange={(e) => setName(e.target.value)}
                             required
                             disabled={loading}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-900 font-medium"
                             placeholder="John Doe"
                         />
                     </div>
@@ -133,7 +234,7 @@ export default function SignUpModal({ isOpen, onClose, onSwitchToLogin }: SignUp
                             onChange={(e) => setEmail(e.target.value)}
                             required
                             disabled={loading}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-900 font-medium"
                             placeholder="you@example.com"
                         />
                     </div>
@@ -149,7 +250,8 @@ export default function SignUpModal({ isOpen, onClose, onSwitchToLogin }: SignUp
                             onChange={(e) => setPassword(e.target.value)}
                             required
                             disabled={loading}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-900 font-medium"
+                            style={{ WebkitTextSecurity: 'disc' }}
                             placeholder="••••••••"
                         />
                     </div>
@@ -165,7 +267,8 @@ export default function SignUpModal({ isOpen, onClose, onSwitchToLogin }: SignUp
                             onChange={(e) => setConfirmPassword(e.target.value)}
                             required
                             disabled={loading}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-900 font-medium"
+                            style={{ WebkitTextSecurity: 'disc' }}
                             placeholder="••••••••"
                         />
                     </div>

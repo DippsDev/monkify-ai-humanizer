@@ -12,6 +12,8 @@
 - **🔄 Back-Translation** - Multi-language translation chains for natural paraphrasing (✅ **Implemented**)
 - **🎯 Three Intensity Modes** - Light (AI), Medium (2-hop translation), Heavy (3-hop translation)
 - **🔀 Unique Every Time** - Same input produces different outputs on each request
+- **🔐 User Authentication** - Secure login with email/password or OAuth (Google, GitHub) (✅ **Implemented**)
+- **👤 User Accounts** - Personal accounts with session management (✅ **Implemented**)
 - **🤖 AI Detector** - Analyze text to identify AI-generated content (Coming soon)
 - **📝 Plagiarism Checker** - Scan work for similarities (Coming soon)
 - **💬 AI Chat** - Get writing assistance and refine ideas (Coming soon)
@@ -24,6 +26,7 @@
 - **Styling**: Tailwind CSS v4
 - **AI**: Google Gemini API (Light mode only)
 - **Translation**: Google Translate API (Medium & Heavy modes)
+- **Authentication**: [Supabase](https://supabase.com/) (Email/Password + OAuth)
 - **Fonts**: Custom local fonts (Bungee, Fredoka)
 
 ## 📦 Quick Start
@@ -71,9 +74,28 @@ GEMINI_API_KEY=your_gemini_api_key_here
 
 # Google Translate API Key (for Medium & Heavy mode back-translation)
 GOOGLE_TRANSLATE_API_KEY=your_google_translate_api_key_here
+
+# Supabase Configuration (for user authentication)
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-### 4. Run the Development Server
+### 4. Set Up Supabase Authentication (Optional)
+
+If you want user authentication:
+
+1. **Create a Supabase project** at [supabase.com](https://supabase.com)
+2. **Get your credentials**:
+   - Go to Settings → API
+   - Copy your Project URL and anon/public key
+3. **Update `.env.local`** with your Supabase credentials
+4. **Configure authentication**:
+   - Go to Authentication → URL Configuration
+   - Set Site URL to `http://localhost:3000`
+   - Add Redirect URL: `http://localhost:3000/auth/callback`
+5. **Optional: Enable OAuth providers** (Google, GitHub) in Authentication → Providers
+
+### 5. Run the Development Server
 
 ```bash
 npm run dev
@@ -255,19 +277,31 @@ monkify/
 │   ├── api/
 │   │   └── humanize/
 │   │       └── route.ts            # Humanization API with back-translation
+│   ├── auth/
+│   │   └── callback/
+│   │       └── route.ts            # OAuth callback handler
 │   ├── components/
-│   │   ├── Navbar.tsx              # Navigation bar
-│   │   ├── LoginModal.tsx          # Login modal
-│   │   ├── SignUpModal.tsx         # Sign up modal
+│   │   ├── Navbar.tsx              # Navigation bar with user profile
+│   │   ├── LoginModal.tsx          # Login modal with auth
+│   │   ├── SignUpModal.tsx         # Sign up modal with auth
+│   │   ├── ForgotPasswordModal.tsx # Password reset modal
 │   │   ├── TestimonialsMarquee.tsx # Scrolling testimonials
 │   │   └── FAQ.tsx                 # FAQ accordion
 │   ├── signup/
 │   │   └── page.tsx                # Sign up page
-│   ├── layout.tsx                  # Root layout
+│   ├── layout.tsx                  # Root layout with AuthProvider
 │   ├── page.tsx                    # Home page
 │   └── globals.css                 # Global styles
+├── lib/
+│   ├── supabase/
+│   │   ├── client.ts               # Browser Supabase client
+│   │   ├── server.ts               # Server Supabase client
+│   │   └── middleware.ts           # Session management
+│   └── auth/
+│       └── AuthContext.tsx         # Auth state provider
 ├── public/
 │   └── fonts/                      # Custom fonts (Bungee, Fredoka)
+├── middleware.ts                   # Session refresh middleware
 ├── .env.local                      # Environment variables (API keys)
 └── README.md                       # This file
 ```
@@ -355,6 +389,80 @@ Humanize AI-generated text with three intensity modes.
 - Medium mode for balanced transformation
 - Heavy mode only for critical content needing maximum variation
 
+## 🔐 Authentication System
+
+### Features
+- ✅ Email/Password registration with email verification
+- ✅ Secure login with session management
+- ✅ Password reset functionality
+- ✅ Google OAuth (requires configuration)
+- ✅ GitHub OAuth (requires configuration)
+- ✅ Automatic session refresh
+- ✅ User profile display in navbar
+
+### Using Authentication
+
+**Sign Up:**
+1. Click "Sign Up" in the navbar
+2. Enter your name, email, and password
+3. Check your email for verification link
+4. Click the link to verify your account
+
+**Login:**
+1. Click "Login" in the navbar
+2. Enter your email and password
+3. Or use Google/GitHub OAuth (if configured)
+
+**Password Reset:**
+1. Click "Forgot password?" on login modal
+2. Enter your email
+3. Check your email for reset link
+4. Follow the link to set a new password
+
+**Sign Out:**
+1. Click your profile icon in the navbar
+2. Click "Sign Out"
+
+### For Developers
+
+**Check if user is logged in:**
+```tsx
+import { useAuth } from '@/lib/auth/AuthContext';
+
+function MyComponent() {
+  const { user, loading } = useAuth();
+  
+  if (loading) return <div>Loading...</div>;
+  if (user) return <div>Welcome, {user.email}!</div>;
+  return <div>Please log in</div>;
+}
+```
+
+**Sign out programmatically:**
+```tsx
+import { useAuth } from '@/lib/auth/AuthContext';
+
+function SignOutButton() {
+  const { signOut } = useAuth();
+  return <button onClick={signOut}>Sign Out</button>;
+}
+```
+
+**Server-side authentication:**
+```tsx
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
+
+export default async function ProtectedPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) redirect('/');
+  
+  return <div>Protected content for {user.email}</div>;
+}
+```
+
 ## 🔐 Security & Privacy
 
 ### API Key Security
@@ -407,11 +515,14 @@ const rateLimit = {
 - [x] Unique output on every request
 - [x] Real-time processing with loading states
 - [x] Copy to clipboard functionality
+- [x] User authentication (Email/Password + OAuth)
+- [x] User session management
+- [x] Password reset functionality
 - [ ] File upload support (.txt, .docx, .pdf)
 - [ ] AI detection integration
 - [ ] Plagiarism checking
-- [ ] User authentication
-- [ ] Usage analytics dashboard
+- [ ] User dashboard with usage analytics
+- [ ] Save and manage humanized texts
 - [ ] Multiple language support
 - [ ] Custom translation chain selection
 - [ ] Quality scoring system
