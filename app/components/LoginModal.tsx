@@ -192,7 +192,7 @@ export default function LoginModal({ isOpen, onClose, onSwitchToSignUp, onForgot
                                 required
                                 disabled={loading}
                                 className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-900 font-medium"
-                                style={{ WebkitTextSecurity: showPassword ? 'none' : 'disc' }}
+                                style={{ WebkitTextSecurity: showPassword ? 'none' : 'disc' } as React.CSSProperties}
                                 placeholder="••••••••"
                             />
                             <button
