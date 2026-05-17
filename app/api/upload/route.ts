@@ -38,20 +38,21 @@ async function extractTextFromDocx(buffer: Buffer): Promise<string> {
             }
 
             if (obj && typeof obj === 'object') {
+                const objAny = obj as any;
                 // Process text elements
-                if (obj['w:t']) {
-                    text += Array.isArray(obj['w:t']) ? obj['w:t'].join('') : obj['w:t'];
+                if (objAny['w:t']) {
+                    text += Array.isArray(objAny['w:t']) ? objAny['w:t'].join('') : objAny['w:t'];
                 }
 
                 // Process child elements recursively
-                for (const key in obj) {
-                    if (key !== '$' && typeof obj[key] === 'object') {
-                        text += extractText(obj[key]);
+                for (const key in objAny) {
+                    if (key !== '$' && typeof objAny[key] === 'object') {
+                        text += extractText(objAny[key]);
                     }
                 }
 
                 // Add paragraph breaks
-                if (obj['w:p']) {
+                if (objAny['w:p']) {
                     text += '\n';
                 }
             }
