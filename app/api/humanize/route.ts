@@ -490,7 +490,7 @@ function fixGrammarAndSpelling(text: string): string {
         if (typeof rule.replacement === 'string') {
             corrected = corrected.replace(rule.pattern, rule.replacement);
         } else {
-            corrected = corrected.replace(rule.pattern, rule.replacement as any);
+            corrected = corrected.replace(rule.pattern, rule.replacement as (substring: string, ...args: unknown[]) => string);
         }
     });
 
@@ -900,9 +900,9 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        if (text.length > 10000) {
+        if (text.length > 100000) {
             return NextResponse.json(
-                { error: 'Text must be less than 10,000 characters' },
+                { error: 'Text must be less than 100,000 characters' },
                 { status: 400 }
             );
         }
@@ -1012,13 +1012,14 @@ Rewrite this text to sound more human and natural while keeping it professional:
             intensity: intensity,
         });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         console.error('Humanization error:', error);
 
         return NextResponse.json(
             {
                 error: 'Failed to humanize text',
-                details: error.message
+                details: errorMessage
             },
             { status: 500 }
         );
