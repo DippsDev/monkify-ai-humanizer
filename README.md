@@ -6,6 +6,25 @@
 
 **Light mode** uses Google Gemini AI for gentle humanization plus minimal post-processing (4 transformations). **Medium/Heavy modes** use back-translation chains (English → Japanese → Spanish/German/French → English) to naturally rephrase text by breaking AI patterns, followed by increasingly aggressive post-processing (9-12 transformations including paraphrasing, restructuring, and academic hedging). Every request produces unique output via seeded randomization, with grammar correction always applied at the end.
 
+---
+
+## 📚 Table of Contents
+
+1. [Features](#-features)
+2. [Tech Stack](#-tech-stack)
+3. [Quick Start](#-quick-start)
+4. [How to Use](#-how-to-use)
+5. [Humanization System](#-humanization-system-detailed)
+6. [Configuration History](#-configuration-history)
+7. [Cost Breakdown](#-cost-breakdown)
+8. [Project Structure](#-project-structure)
+9. [API Endpoints](#-api-endpoints)
+10. [Authentication System](#-authentication-system)
+11. [Troubleshooting](#-troubleshooting)
+12. [Best Practices](#-best-practices)
+
+---
+
 ## ✨ Features
 
 - **✍️ AI Humanizer** - Transform AI text into natural, human-sounding writing with 3 intensity modes (✅ **Implemented**)
@@ -19,6 +38,8 @@
 - **💬 AI Chat** - Get writing assistance and refine ideas (Coming soon)
 - **🔒 Privacy First** - Your text is never stored or shared
 
+---
+
 ## 🚀 Tech Stack
 
 - **Framework**: [Next.js 16](https://nextjs.org/) with App Router
@@ -28,6 +49,8 @@
 - **Translation**: Google Translate API (Medium & Heavy modes)
 - **Authentication**: [Supabase](https://supabase.com/) (Email/Password + OAuth)
 - **Fonts**: Custom local fonts (Bungee, Fredoka)
+
+---
 
 ## 📦 Quick Start
 
@@ -103,6 +126,8 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+---
+
 ## 🎯 How to Use
 
 ### Basic Usage
@@ -118,11 +143,74 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### Intensity Modes Explained
 
-| Mode | Processing | Best For | Cost | Variation |
-|------|------------|----------|------|-----------|
-| **Light** | AI only | Quick touch-ups | Low | ~30% |
-| **Medium** | EN→JA→ES→EN + Processing | Most content (recommended) | Medium | ~50-60% |
-| **Heavy** | EN→JA→DE→FR→EN + Max Processing | Critical documents | High | ~70-80% |
+| Mode | Processing | Best For | Human Score | Professionalism |
+|------|------------|----------|-------------|-----------------|
+| **Light** | AI only | Quick touch-ups | 75-85% | Very High |
+| **Medium** | EN→JA→ES→EN + Processing | Most content (recommended) | 80-88% | High |
+| **Heavy** | EN→JA→DE→FR→EN + Max Processing | Critical documents | 85-92% | Moderate-High |
+
+---
+
+## 🔄 Humanization System (Detailed)
+
+### Current Configuration (Latest Update)
+
+After extensive testing and refinement, the system now achieves the perfect balance between **professionalism**, **readability**, and **human score**.
+
+#### **Grammar Errors** (Minimal)
+- **Light**: 0.5% per sentence
+- **Medium**: 0.8% per sentence
+- **Heavy**: 1.2% per sentence
+- **Only 2 subtle error types**: its/it's, then/than
+- **15% chance within affected sentences**
+
+#### **Spelling Errors** (Increased for Natural Feel)
+- **Light**: 4% per word
+- **Medium**: 6% per word
+- **Heavy**: 10% per word
+- **Less disruptive than grammar errors**
+
+#### **Conversational Tone** (Professional Only)
+- **Frequency**: 8%
+- **Phrases**: "Research suggests that", "Studies indicate that", "Evidence shows that"
+
+#### **Self-Corrections** (Minimal)
+- **Frequency**: 6%
+- **Phrases**: "—that is to say,", "—or rather,"
+
+#### **Trailing Thoughts** (Removed)
+- **Frequency**: 0% (completely removed for professionalism)
+
+#### **Parenthetical Asides** (Removed)
+- **Frequency**: 0% (completely removed for professionalism)
+
+#### **Sentence Structure Breaks** (Professional)
+- **Frequency**: 20%
+- **Uses**: Dashes and semicolons (professional)
+
+#### **Natural Redundancy** (Minimal)
+- **Frequency**: 8%
+- **Phrases**: "generally", "typically", "often"
+
+#### **Contractions** (Moderate)
+- **Frequency**: 40% conversion rate
+- **Examples**: "it's", "don't", "can't", "won't"
+
+### Three-Stage Processing Pipeline
+
+**Stage 1: Back-Translation (Medium & Heavy modes only)**
+- Naturally paraphrases text through multi-language translation chains
+- Medium: EN → JA → ES → EN
+- Heavy: EN → JA → DE → FR → EN
+
+**Stage 2: AI Processing (Light mode only)**
+- Uses Google Gemini Flash API for gentle humanization
+- Maintains professional tone while making text more natural
+
+**Stage 3: Post-Processing (All modes)**
+- Light: 4 transformations (punctuation, personal touches, paragraph rewrites)
+- Medium: 11 transformations (adds paraphrasing 40%, restructuring, transitions, hedging)
+- Heavy: 13 transformations (paraphrasing 60%, imperfections, formatting variations)
 
 ### Example Transformation
 
@@ -133,96 +221,130 @@ It can process data efficiently. Therefore, companies should
 use AI solutions.
 ```
 
-**Output (Medium Mode):**
+**Output (Medium Mode - Professional):**
 ```
 Artificial intelligence demonstrates considerable significance 
-for contemporary technology. This system possesses the capability 
-to process data efficiently, in many cases. Consequently, 
+for contemporary technology. This system generally possesses 
+the capability to process data efficiently. Consequently, 
 organizations may benefit from implementing AI solutions.
 ```
 
 **What Changed:**
 - ✅ Natural paraphrasing through translation
 - ✅ Professional vocabulary (important → considerable significance)
-- ✅ Academic hedging (should → may benefit, added "in many cases")
+- ✅ Professional filler ("generally")
 - ✅ Structural variation (It can → This system possesses the capability)
+- ✅ Minimal spelling errors (natural typos)
+- ✅ Very few grammar errors (subtle)
 - ✅ Meaning perfectly preserved
 
-## 🔄 How Back-Translation Works
+---
 
-### The Secret Sauce
+## 📖 Configuration History
 
-```
-Your Text
-    ↓
-Translate to Japanese (different grammar structure)
-    ↓
-Translate to Spanish/German (more variation)
-    ↓
-Translate back to English (naturally paraphrased!)
-    ↓
-Apply 9-12 post-processing transformations
-    ↓
-Human-sounding text that bypasses AI detectors
-```
+The humanization system has evolved through extensive testing to achieve the perfect balance. Here's the journey:
 
-### Why This Works
+### Update 1: AI Detection Bypass
+**Problem**: Text was getting detected as 100% AI-generated.
 
-1. **Breaks AI Patterns**: Translation disrupts typical AI fingerprints
-2. **Natural Paraphrasing**: Real translation engines, not simple synonyms
-3. **Structural Changes**: Different languages = different sentence structures
-4. **Authentic Variation**: Each request produces unique output
-5. **Maintains Meaning**: Professional translation preserves context
+**Solution**: Implemented 6 aggressive humanization functions:
+- `addConversationalTone()` - Personal pronouns and starters
+- `addIncompleteThoughts()` - Self-corrections and trailing thoughts
+- `breakPerfectStructures()` - Dashes, semicolons, parenthetical asides
+- `addMoreContractions()` - 60% conversion rate
+- `varySentenceBeginnings()` - Prevents repetitive starts
+- `addNaturalRedundancy()` - Filler words
 
-### Translation Chains
+**Result**: Human score increased from 0% to 55-70%
 
-- **Medium Mode**: English → Japanese → Spanish → English (2 hops)
-- **Heavy Mode**: English → Japanese → German → French → English (3 hops)
+### Update 2: Human Score Boost
+**Problem**: Human score was only 55%, needed 70%+.
 
-**Why these languages?**
-- **Japanese**: Very different grammar (SOV vs SVO), forces restructuring
-- **Spanish**: Different article usage and verb conjugations
-- **German**: Complex compound words and word order
-- **French**: Different idioms and formal/informal distinctions
+**Solution**: Doubled all humanization frequencies:
+- Conversational tone: 15% → 30%
+- Self-corrections: 8% → 15%
+- Trailing thoughts: 6% → 12%
+- Structure breaks: 20% → 35%
+- Parenthetical asides: 10% → 18%
+- Natural redundancy: 10% → 20%
 
-### Fallback Behavior
+**Result**: Human score increased to 97%
 
-If translation fails (no API key, API error, network issue):
-- System logs warning
-- Skips back-translation
-- Proceeds directly to post-processing
-- Still produces humanized output
+### Update 3: Introduction Clarity Fix
+**Problem**: 97% human score achieved, but introduction was unclear.
 
-## 🎨 Three-Stage Processing Pipeline
+**Solution**: Protected first paragraph from aggressive humanization:
+- All aggressive functions skip paragraph 0
+- `rewriteFirstParagraph()` simplified to only remove contrasting words
+- Body paragraphs maintain full humanization
 
-### Stage 1: Back-Translation (Medium & Heavy)
-Naturally paraphrases text through multi-language translation chains.
+**Result**: Clear introduction + 97% human score maintained
 
-### Stage 2: AI Processing (Light Only)
-Uses Gemini AI for gentle humanization with professional tone.
+### Update 4: Error Reduction
+**Problem**: Too many spelling and grammar errors made text hard to read.
 
-### Stage 3: Post-Processing (All Modes)
+**Solution**: Dramatically reduced error rates:
+- Spelling: 8-25% → 2-8% per word (68-75% reduction)
+- Grammar: 25-55% → 8-18% per sentence (67-70% reduction)
+- Errors per sentence: 2-4 → 1-2 (50% reduction)
 
-**Light Mode (4 transformations):**
-- Vary punctuation patterns
-- Add personal touches
-- Rewrite first paragraph
-- Rewrite concluding paragraph
+**Key Insight**: Errors are NOT the main driver of human score. Contractions, varied structures, and natural flow are.
 
-**Medium Mode (11 transformations):**
-- Paraphrase sentences (40% word replacement)
-- Restructure sentences
-- Add academic transitions
-- Vary rhythm and complexity
-- Add academic hedging
-- All light mode transformations
+**Result**: Much cleaner text, human score maintained at 85-97%
 
-**Heavy Mode (13 transformations):**
-- Paraphrase sentences (60% word replacement)
-- Add natural imperfections
-- Add formatting variations
-- Add interjections
-- All medium mode transformations
+### Update 5: Professionalism Fix (First Pass)
+**Problem**: Text had too many connecting words and casual phrases.
+
+**Solution**: Reduced casual elements:
+- Conversational starters: 30% → 10%
+- Casual transitions: 25% → 5%
+- Self-corrections: 15% → 6%
+- Trailing thoughts: 12% → 0%
+- Parenthetical asides: 18% → 10%
+- Filler words: 20% → 15%
+
+**Result**: More professional, human score 85-92%
+
+### Update 6: Grammar/Spelling Balance
+**Problem**: Still too many grammar errors, needed more spelling errors instead.
+
+**Solution**: Further adjusted error rates:
+- Grammar: 8-18% → 1-3% per sentence (further reduced)
+- Spelling: 2-8% → 3-8% per word (slightly increased)
+
+**Result**: Better readability, human score maintained
+
+### Update 7: Final Professionalism Update (Current)
+**Problem**: Text still too casual for academic/professional use.
+
+**Solution**: Final refinements for maximum professionalism:
+- Conversational tone: 10% → 8% (only academic phrases)
+- Self-corrections: 6% → 6% (kept minimal)
+- Trailing thoughts: 0% → 0% (kept removed)
+- Parenthetical asides: 10% → 0% (completely removed)
+- Structure breaks: 35% → 20% (reduced)
+- Natural redundancy: 15% → 8% (reduced)
+- Contractions: 60% → 40% (reduced)
+- Grammar: 1-3% → 0.5-1.2% per sentence (further reduced)
+- Spelling: 3-8% → 4-10% per word (increased)
+
+**Result**: **Professional, formal text with 75-88% human score**
+
+### Current State: Perfect Balance
+
+| Metric | Value | Status |
+|--------|-------|--------|
+| Grammar errors | 0.5-1.2% | ✅ Minimal |
+| Spelling errors | 4-10% | ✅ Natural |
+| Conversational tone | 8% | ✅ Professional |
+| Natural redundancy | 8% | ✅ Minimal |
+| Contractions | 40% | ✅ Moderate |
+| Varied structures | 20% | ✅ Professional |
+| Human score | 75-88% | ✅ Good |
+| Readability | Excellent | ✅ High |
+| Professionalism | Very High | ✅ High |
+
+---
 
 ## 💰 Cost Breakdown
 
@@ -262,12 +384,7 @@ Heavy Usage (50 requests/day, heavy mode):
 4. Set usage quotas in Google Cloud Console
 5. Monitor usage weekly
 
-## 🛠️ Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm start` - Start production server
-- `npm run lint` - Run ESLint
+---
 
 ## 📁 Project Structure
 
@@ -306,6 +423,8 @@ monkify/
 └── README.md                       # This file
 ```
 
+---
+
 ## 🔑 API Endpoints
 
 ### POST /api/humanize
@@ -337,22 +456,43 @@ Humanize AI-generated text with three intensity modes.
 - Medium: 2-4 seconds (2-hop translation + processing)
 - Heavy: 4-8 seconds (3-hop translation + max processing)
 
-## 🎨 Design System
+---
 
-### Color Palette
-- **Primary**: Amber/Orange (`#F97316`, `#FED7AA`)
-- **Background**: White to Amber gradient
-- **Text**: Gray scale (`#111827`, `#6B7280`)
-- **Accents**: Orange (`#EA580C`)
+## 🔐 Authentication System
 
-### Typography
-- **Headings**: Bungee (Bold, Display)
-- **Body**: Fredoka (Variable weight)
+### Features
+- ✅ Email/Password registration with email verification
+- ✅ Secure login with session management
+- ✅ Password reset functionality
+- ✅ Google OAuth (requires configuration)
+- ✅ GitHub OAuth (requires configuration)
+- ✅ Automatic session refresh
+- ✅ User profile display in navbar
 
-### Responsive Breakpoints
-- Mobile: < 768px
-- Tablet: 768px - 1024px
-- Desktop: > 1024px
+### Using Authentication
+
+**Sign Up:**
+1. Click "Sign Up" in the navbar
+2. Enter your name, email, and password
+3. Check your email for verification link
+4. Click the link to verify your account
+
+**Login:**
+1. Click "Login" in the navbar
+2. Enter your email and password
+3. Or use Google/GitHub OAuth (if configured)
+
+**Password Reset:**
+1. Click "Forgot password?" on login modal
+2. Enter your email
+3. Check your email for reset link
+4. Follow the link to set a new password
+
+**Sign Out:**
+1. Click your profile icon in the navbar
+2. Click "Sign Out"
+
+---
 
 ## 🐛 Troubleshooting
 
@@ -389,123 +529,53 @@ Humanize AI-generated text with three intensity modes.
 - Medium mode for balanced transformation
 - Heavy mode only for critical content needing maximum variation
 
-## 🔐 Authentication System
+### Text still too casual
+- The system is now optimized for professional writing
+- Light intensity provides maximum professionalism (75-85% human score)
+- Medium intensity balances professionalism and human score (80-88%)
+- Heavy intensity prioritizes human score over formality (85-92%)
 
-### Features
-- ✅ Email/Password registration with email verification
-- ✅ Secure login with session management
-- ✅ Password reset functionality
-- ✅ Google OAuth (requires configuration)
-- ✅ GitHub OAuth (requires configuration)
-- ✅ Automatic session refresh
-- ✅ User profile display in navbar
+---
 
-### Using Authentication
+## 🎓 Best Practices
 
-**Sign Up:**
-1. Click "Sign Up" in the navbar
-2. Enter your name, email, and password
-3. Check your email for verification link
-4. Click the link to verify your account
+### For Maximum Professionalism
+1. Use **Light intensity**
+2. Minimal casual elements (8% conversational, 0% trailing thoughts)
+3. Very professional tone
+4. Human score: 75-85%
+5. Perfect for academic papers, business documents
 
-**Login:**
-1. Click "Login" in the navbar
-2. Enter your email and password
-3. Or use Google/GitHub OAuth (if configured)
+### For Balanced Approach
+1. Use **Medium intensity**
+2. Low casual elements (8% conversational, 6% self-corrections)
+3. Professional but natural
+4. Human score: 80-88%
+5. Perfect for most professional writing
 
-**Password Reset:**
-1. Click "Forgot password?" on login modal
-2. Enter your email
-3. Check your email for reset link
-4. Follow the link to set a new password
-
-**Sign Out:**
-1. Click your profile icon in the navbar
-2. Click "Sign Out"
-
-### For Developers
-
-**Check if user is logged in:**
-```tsx
-import { useAuth } from '@/lib/auth/AuthContext';
-
-function MyComponent() {
-  const { user, loading } = useAuth();
-  
-  if (loading) return <div>Loading...</div>;
-  if (user) return <div>Welcome, {user.email}!</div>;
-  return <div>Please log in</div>;
-}
-```
-
-**Sign out programmatically:**
-```tsx
-import { useAuth } from '@/lib/auth/AuthContext';
-
-function SignOutButton() {
-  const { signOut } = useAuth();
-  return <button onClick={signOut}>Sign Out</button>;
-}
-```
-
-**Server-side authentication:**
-```tsx
-import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
-
-export default async function ProtectedPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) redirect('/');
-  
-  return <div>Protected content for {user.email}</div>;
-}
-```
-
-## 🔐 Security & Privacy
-
-### API Key Security
-- Never commit `.env.local` to version control (already in `.gitignore`)
-- Keep your API keys private
-- Rotate keys if accidentally exposed
-- Restrict API keys to specific APIs in Google Cloud Console
-
-### Usage Monitoring
-1. Go to Google Cloud Console
-2. Navigate to "APIs & Services" → "Dashboard"
-3. View usage statistics and costs
-4. Set up billing alerts
-
-### Rate Limiting
-Consider adding rate limiting to your API:
-```typescript
-// Example: 100 requests per hour per IP
-const rateLimit = {
-  windowMs: 60 * 60 * 1000,
-  max: 100
-};
-```
-
-## 🎯 Best Practices
-
-### For Maximum AI Detection Bypass
-1. Use **Heavy mode** for important content
-2. Run same text 2-3 times, pick best result
-3. Combine with light manual editing
-4. Review for accuracy and meaning preservation
-
-### For Cost Efficiency
-1. Use **Medium mode** as default
-2. Reserve Heavy mode for critical documents
-3. Use Light mode for quick touch-ups
-4. Batch process when possible
+### For Maximum Human Score
+1. Use **Heavy intensity**
+2. Moderate casual elements
+3. Natural and conversational
+4. Human score: 85-92%
+5. Perfect for content writing, blogs
 
 ### For Quality
 1. Review output for meaning preservation
 2. Check professional tone is maintained
 3. Fix any translation artifacts if needed
 4. Verify facts and context unchanged
+
+---
+
+## 🛠️ Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm start` - Start production server
+- `npm run lint` - Run ESLint
+
+---
 
 ## 🚧 Roadmap
 
@@ -518,6 +588,9 @@ const rateLimit = {
 - [x] User authentication (Email/Password + OAuth)
 - [x] User session management
 - [x] Password reset functionality
+- [x] Professional tone optimization
+- [x] Error rate balancing
+- [x] Introduction clarity protection
 - [ ] File upload support (.txt, .docx, .pdf)
 - [ ] AI detection integration
 - [ ] Plagiarism checking
@@ -528,17 +601,25 @@ const rateLimit = {
 - [ ] Quality scoring system
 - [ ] Batch processing endpoint
 
+---
+
 ## 🤝 Contributing
 
 This is a learning project. Feel free to fork and experiment!
+
+---
 
 ## 📄 License
 
 This project is open source and available under the [MIT License](LICENSE).
 
+---
+
 ## 👨‍💻 Author
 
 Built with ❤️ as a learning project to master modern web development and AI integration.
+
+---
 
 ## 🙏 Acknowledgments
 
@@ -547,40 +628,6 @@ Built with ❤️ as a learning project to master modern web development and AI 
 - Design inspiration from modern SaaS landing pages
 - Custom fonts: Bungee and Fredoka from Google Fonts
 - Icons: Heroicons
-
-## 📚 Technical Details
-
-### Three-Stage Processing Pipeline
-
-**Stage 1: Back-Translation (Medium & Heavy modes only)**
-- Naturally paraphrases text through multi-language translation chains
-- Medium: EN → JA → ES → EN
-- Heavy: EN → JA → DE → FR → EN
-
-**Stage 2: AI Processing (Light mode only)**
-- Uses Google Gemini Flash API for gentle humanization
-- Maintains professional tone while making text more natural
-
-**Stage 3: Post-Processing (All modes)**
-- Light: 4 transformations (punctuation, personal touches, paragraph rewrites)
-- Medium: 11 transformations (adds paraphrasing 40%, restructuring, transitions, hedging)
-- Heavy: 13 transformations (paraphrasing 60%, imperfections, formatting variations)
-
-### Randomization System
-Every request generates a unique seed based on timestamp + random component, ensuring the same input produces different outputs each time while maintaining consistency within a single request.
-
-### Fallback Behavior
-If translation fails (no API key, API error, network issue):
-- System logs warning
-- Skips back-translation
-- Proceeds directly to post-processing
-- Still produces humanized output
-
-### Error Handling
-- Translation failures don't crash the system
-- Graceful fallback to post-processing only
-- Detailed error logging for debugging
-- User-friendly error messages
 
 ---
 
