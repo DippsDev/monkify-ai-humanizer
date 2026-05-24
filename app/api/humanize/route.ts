@@ -42,8 +42,7 @@ let globalRandom: SeededRandom = new SeededRandom(Date.now());
 // AGGRESSIVE AI DETECTION BYPASS FUNCTIONS
 // ============================================================================
 
-// Add conversational elements and personal voice
-// Add conversational elements and personal voice
+// Add conversational elements and personal voice - OPTIMIZED FOR 80%+ SCORE
 function addConversationalTone(text: string): string {
     const paragraphs = text.split('\n\n').filter(p => p.trim().length > 0);
 
@@ -54,18 +53,52 @@ function addConversationalTone(text: string): string {
         let sentences = paragraph.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
 
         sentences = sentences.map((sentence, sentIndex) => {
-            // Add professional academic starters (REDUCED for more formality)
-            if (globalRandom.next() < 0.08 && sentence.length > 50) { // Reduced from 0.15 to 0.08
+            // Add professional academic starters - OPTIMIZED frequency
+            if (globalRandom.next() < 0.22 && sentence.length > 40) {
                 const conversationalStarters = [
                     "Research suggests that ",
                     "Studies indicate that ",
                     "Evidence shows that ",
+                    "Analysis reveals that ",
+                    "Findings demonstrate that ",
+                    "Observations suggest that ",
+                    "Data indicates that ",
+                    "Experts note that ",
+                    "Scholars argue that ",
+                    "It's worth noting that ",
+                    "One could argue that ",
+                    "It appears that ",
+                    "It seems that ",
+                    "Many believe that ",
+                    "Some suggest that ",
+                    "Research has shown that ",
+                    "Experience tells us that ",
+                    "History shows that ",
                 ];
                 const starter = globalRandom.choice(conversationalStarters);
                 sentence = starter + sentence.charAt(0).toLowerCase() + sentence.slice(1);
             }
 
-            // NO casual transitions - keep it professional
+            // Add natural connectors - OPTIMIZED for consistency
+            if (sentIndex > 0 && globalRandom.next() < 0.20 && sentence.length > 25) {
+                const connectors = [
+                    "In fact, ",
+                    "What's more, ",
+                    "Interestingly, ",
+                    "Notably, ",
+                    "In this context, ",
+                    "From this perspective, ",
+                    "To put it differently, ",
+                    "In other words, ",
+                    "More specifically, ",
+                    "For instance, ",
+                    "As an example, ",
+                    "Particularly, ",
+                    "Especially, ",
+                ];
+                const connector = globalRandom.choice(connectors);
+                sentence = connector + sentence.charAt(0).toLowerCase() + sentence.slice(1);
+            }
 
             return sentence;
         });
@@ -76,7 +109,7 @@ function addConversationalTone(text: string): string {
     return modifiedParagraphs.join('\n\n');
 }
 
-// Add incomplete thoughts and self-corrections (very human) - SKIP FIRST PARAGRAPH
+// Add incomplete thoughts and self-corrections (very human) - SKIP FIRST PARAGRAPH - IMPROVED
 function addIncompleteThoughts(text: string): string {
     const paragraphs = text.split('\n\n').filter(p => p.trim().length > 0);
 
@@ -87,22 +120,24 @@ function addIncompleteThoughts(text: string): string {
         const sentences = paragraph.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
 
         const modified = sentences.map(sentence => {
-            // Add self-corrections (REDUCED for professionalism)
-            if (globalRandom.next() < 0.06 && sentence.length > 50) { // Reduced from 0.15 to 0.06
-                const words = sentence.split(' ');
-                const insertPoint = globalRandom.nextInt(Math.floor(words.length / 3), Math.floor(words.length * 2 / 3));
+            // Add self-corrections - OPTIMIZED for authenticity
+            if (globalRandom.next() < 0.10 && sentence.length > 60) {
+                // Only add corrections at commas or conjunctions to avoid awkward repetitions
+                if (sentence.includes(',') || sentence.includes(' and ') || sentence.includes(' but ')) {
+                    const corrections = [
+                        ", that is to say,",
+                        ", or rather,",
+                        ", in other words,",
+                    ];
 
-                const corrections = [
-                    "—that is to say, ",
-                    "—or rather, ",
-                ];
+                    const correction = globalRandom.choice(corrections);
 
-                const correction = globalRandom.choice(corrections);
-                words.splice(insertPoint, 0, correction);
-                sentence = words.join(' ');
+                    // Replace first comma with correction (more natural placement)
+                    if (sentence.includes(',')) {
+                        sentence = sentence.replace(',', correction);
+                    }
+                }
             }
-
-            // NO trailing thoughts - removed for professionalism
 
             return sentence;
         });
@@ -113,7 +148,7 @@ function addIncompleteThoughts(text: string): string {
     return modifiedParagraphs.join('\n\n');
 }
 
-// Break up overly perfect sentence structures - SKIP FIRST PARAGRAPH
+// MAXIMUM sentence structure variation - SKIP FIRST PARAGRAPH
 function breakPerfectStructures(text: string): string {
     const paragraphs = text.split('\n\n').filter(p => p.trim().length > 0);
 
@@ -124,24 +159,55 @@ function breakPerfectStructures(text: string): string {
         const sentences = paragraph.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
 
         const modified = sentences.map(sentence => {
-            // Randomly split long sentences with dashes or semicolons (REDUCED)
-            if (sentence.length > 80 && globalRandom.next() < 0.20) { // Reduced from 0.35 to 0.20
+            // MAXIMUM sentence splitting for natural flow - OPTIMIZED
+            if (sentence.length > 65 && globalRandom.next() < 0.50) {
                 const words = sentence.split(' ');
-                const splitPoint = globalRandom.nextInt(Math.floor(words.length / 2) - 2, Math.floor(words.length / 2) + 2);
+                const splitPoint = globalRandom.nextInt(Math.floor(words.length / 2) - 3, Math.floor(words.length / 2) + 3);
 
                 if (splitPoint > 0 && splitPoint < words.length - 1) {
                     const firstPart = words.slice(0, splitPoint).join(' ');
                     const secondPart = words.slice(splitPoint).join(' ');
 
-                    if (globalRandom.next() < 0.5) {
+                    // Use MORE different punctuation styles for variety
+                    const splitStyle = globalRandom.next();
+                    if (splitStyle < 0.3) {
                         return `${firstPart}—${secondPart}`;
-                    } else {
+                    } else if (splitStyle < 0.6) {
                         return `${firstPart}; ${secondPart.charAt(0).toLowerCase()}${secondPart.slice(1)}`;
+                    } else if (splitStyle < 0.8) {
+                        // Add a comma with a conjunction
+                        const conjunctions = ['and', 'but', 'yet', 'so', 'for'];
+                        const conj = globalRandom.choice(conjunctions);
+                        return `${firstPart}, ${conj} ${secondPart.charAt(0).toLowerCase()}${secondPart.slice(1)}`;
+                    } else {
+                        // Split into two sentences
+                        return `${firstPart}. ${secondPart.charAt(0).toUpperCase()}${secondPart.slice(1)}`;
                     }
                 }
             }
 
-            // NO parenthetical asides - removed for professionalism
+            // Add parenthetical asides for natural human writing - OPTIMIZED
+            if (sentence.length > 50 && globalRandom.next() < 0.22) {
+                const words = sentence.split(' ');
+                const insertPoint = globalRandom.nextInt(Math.floor(words.length / 3), Math.floor(words.length * 2 / 3));
+
+                const asides = [
+                    'of course',
+                    'naturally',
+                    'as expected',
+                    'in this case',
+                    'for instance',
+                    'to be clear',
+                    'in fact',
+                    'as it happens',
+                    'interestingly enough',
+                    'surprisingly',
+                ];
+
+                const aside = globalRandom.choice(asides);
+                words.splice(insertPoint, 0, `(${aside})`);
+                sentence = words.join(' ');
+            }
 
             return sentence;
         });
@@ -152,11 +218,11 @@ function breakPerfectStructures(text: string): string {
     return modifiedParagraphs.join('\n\n');
 }
 
-// Add more contractions (humans use these constantly)
+// Enhanced contractions for more natural human writing
 function addMoreContractions(text: string): string {
     let modified = text;
 
-    // Moderate contraction replacement (reduced for professionalism)
+    // Balanced contraction replacement for natural flow
     const contractions = [
         { full: /\bit is\b/gi, short: "it's" },
         { full: /\bthat is\b/gi, short: "that's" },
@@ -185,19 +251,36 @@ function addMoreContractions(text: string): string {
         { full: /\bwere not\b/gi, short: "weren't" },
         { full: /\bis not\b/gi, short: "isn't" },
         { full: /\bare not\b/gi, short: "aren't" },
+        { full: /\bI will\b/gi, short: "I'll" },
+        { full: /\bwe will\b/gi, short: "we'll" },
+        { full: /\bthey will\b/gi, short: "they'll" },
+        { full: /\byou will\b/gi, short: "you'll" },
+        { full: /\bhe will\b/gi, short: "he'll" },
+        { full: /\bshe will\b/gi, short: "she'll" },
+        { full: /\bit will\b/gi, short: "it'll" },
+        { full: /\bI would\b/gi, short: "I'd" },
+        { full: /\bwe would\b/gi, short: "we'd" },
+        { full: /\bthey would\b/gi, short: "they'd" },
+        { full: /\byou would\b/gi, short: "you'd" },
+        { full: /\bhe would\b/gi, short: "he'd" },
+        { full: /\bshe would\b/gi, short: "she'd" },
+        { full: /\bI have\b/gi, short: "I've" },
+        { full: /\bwe have\b/gi, short: "we've" },
+        { full: /\bthey have\b/gi, short: "they've" },
+        { full: /\byou have\b/gi, short: "you've" },
     ];
 
     contractions.forEach(({ full, short }) => {
-        // Apply contractions with 40% probability (reduced from 60%)
+        // Apply contractions with 70% probability for maximum natural feel
         modified = modified.replace(full, (match) => {
-            return globalRandom.next() < 0.40 ? short : match;
+            return globalRandom.next() < 0.70 ? short : match;
         });
     });
 
     return modified;
 }
 
-// Vary sentence beginnings aggressively (AI often starts sentences similarly)
+// Vary sentence beginnings AGGRESSIVELY (AI often starts sentences similarly)
 function varySentenceBeginnings(text: string): string {
     const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
 
@@ -207,17 +290,22 @@ function varySentenceBeginnings(text: string): string {
     const modified = sentences.map((sentence, index) => {
         const firstWord = sentence.split(' ')[0].toLowerCase();
 
-        // If we've used this beginning recently, change it
-        if (beginnings.slice(-3).includes(firstWord) && globalRandom.next() < 0.7) {
+        // If we've used this beginning recently, change it MORE AGGRESSIVELY
+        if (beginnings.slice(-3).includes(firstWord) && globalRandom.next() < 0.85) {
             const alternatives = [
                 "Additionally, ",
                 "Also, ",
                 "Plus, ",
-                "Furthermore, ",
                 "What's more, ",
                 "On top of that, ",
                 "Besides, ",
-                "Moreover, ",
+                "In addition, ",
+                "Beyond that, ",
+                "Equally important, ",
+                "Similarly, ",
+                "Likewise, ",
+                "At the same time, ",
+                "Simultaneously, ",
             ];
 
             const alt = globalRandom.choice(alternatives);
@@ -243,7 +331,7 @@ function addNaturalRedundancy(text: string): string {
         const sentences = paragraph.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
 
         const modified = sentences.map(sentence => {
-            if (globalRandom.next() < 0.08 && sentence.length > 50) { // Reduced from 0.15 to 0.08
+            if (globalRandom.next() < 0.15 && sentence.length > 50) { // Increased from 0.12
                 const redundantPhrases = [
                     "generally ",
                     "typically ",
@@ -352,20 +440,162 @@ function varyWordCountInSentences(text: string): string {
     return modifiedParagraphs.join('\n\n');
 }
 
-// Add subtle typos and corrections (strikethrough effect in markdown)
+// Add subtle variations without awkward repetitions - IMPROVED
 function addNaturalImperfections(text: string): string {
     const sentences = text.split('. ');
     const modifiedSentences = sentences.map((sentence) => {
-        // Randomly add natural hesitations or corrections (3% chance - reduced for professionalism)
-        if (globalRandom.next() < 0.03 && sentence.length > 20) {
-            const words = sentence.split(' ');
-            const randomIndex = globalRandom.nextInt(1, words.length - 2);
-            // Add a professional correction pattern
-            words[randomIndex] = `${words[randomIndex]}—or rather, ${words[randomIndex]}`;
+        // Add natural pauses with em-dashes instead of repetitions (2% chance - very subtle)
+        if (globalRandom.next() < 0.02 && sentence.length > 40) {
+            // Add a natural pause at a logical break point (comma or conjunction)
+            if (sentence.includes(',')) {
+                // Replace a comma with an em-dash for emphasis (no repetition)
+                const commaIndex = sentence.indexOf(',');
+                if (commaIndex > 10 && commaIndex < sentence.length - 10) {
+                    sentence = sentence.replace(',', '—');
+                }
+            }
         }
         return sentence;
     });
     return modifiedSentences.join('. ');
+}
+
+// Add natural thinking patterns and hesitations
+function addThinkingPatterns(text: string): string {
+    const paragraphs = text.split('\n\n').filter(p => p.trim().length > 0);
+
+    const modifiedParagraphs = paragraphs.map((paragraph, paragraphIndex) => {
+        // Skip first paragraph
+        if (paragraphIndex === 0) return paragraph;
+
+        const sentences = paragraph.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
+
+        const modified = sentences.map((sentence, sentIndex) => {
+            // Add thinking patterns occasionally - INCREASED
+            if (globalRandom.next() < 0.12 && sentence.length > 40 && sentIndex > 0) {
+                const thinkingPatterns = [
+                    "It's interesting to note that ",
+                    "What's particularly noteworthy is that ",
+                    "One might observe that ",
+                    "It's worth considering that ",
+                    "Looking at this more closely, ",
+                    "Upon closer examination, ",
+                    "From this angle, ",
+                    "Taking a step back, ",
+                    "If we think about it, ",
+                    "Considering this further, ",
+                ];
+                const pattern = globalRandom.choice(thinkingPatterns);
+                sentence = pattern + sentence.charAt(0).toLowerCase() + sentence.slice(1);
+            }
+            return sentence;
+        });
+
+        return modified.join(' ');
+    });
+
+    return modifiedParagraphs.join('\n\n');
+}
+
+// Add more natural sentence flow variations
+function addFlowVariations(text: string): string {
+    const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
+
+    const modified = sentences.map((sentence, index) => {
+        // Occasionally start with a question-like structure - INCREASED
+        if (globalRandom.next() < 0.08 && sentence.length > 50 && index > 0) {
+            const questionStarters = [
+                "Why is this important? ",
+                "What does this mean? ",
+                "How does this work? ",
+                "Why does this matter? ",
+                "What's the significance? ",
+            ];
+            const starter = globalRandom.choice(questionStarters);
+            return starter + sentence;
+        }
+        return sentence;
+    });
+
+    return modified.join(' ');
+}
+
+// Add perplexity - vary word choice unpredictably (KEY for 80%+)
+function addPerplexity(text: string): string {
+    const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
+
+    const modified = sentences.map((sentence) => {
+        // Randomly restructure some sentences for unpredictability
+        if (globalRandom.next() < 0.15 && sentence.length > 60) {
+            // Add unexpected word choices
+            const unexpectedPhrases = [
+                { pattern: /\bvery important\b/gi, replacement: 'crucial' },
+                { pattern: /\bvery good\b/gi, replacement: 'excellent' },
+                { pattern: /\bvery bad\b/gi, replacement: 'problematic' },
+                { pattern: /\ba lot of\b/gi, replacement: 'numerous' },
+                { pattern: /\bin order to\b/gi, replacement: 'to' },
+                { pattern: /\bdue to the fact that\b/gi, replacement: 'because' },
+                { pattern: /\bat this point in time\b/gi, replacement: 'now' },
+            ];
+
+            unexpectedPhrases.forEach(({ pattern, replacement }) => {
+                if (globalRandom.next() < 0.6) {
+                    sentence = sentence.replace(pattern, replacement);
+                }
+            });
+        }
+        return sentence;
+    });
+
+    return modified.join(' ');
+}
+
+// Add burstiness - vary sentence length dramatically (KEY for 80%+)
+function addBurstiness(text: string): string {
+    const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
+
+    const modified: string[] = [];
+
+    for (let i = 0; i < sentences.length; i++) {
+        let sentence = sentences[i];
+        const wordCount = sentence.split(' ').length;
+
+        // Create dramatic length variations
+        if (wordCount > 20 && globalRandom.next() < 0.25) {
+            // Split long sentence into short burst
+            const words = sentence.split(' ');
+            const splitPoint = globalRandom.nextInt(5, 10);
+
+            if (splitPoint < words.length - 5) {
+                const firstPart = words.slice(0, splitPoint).join(' ');
+                const secondPart = words.slice(splitPoint).join(' ');
+
+                // Create a very short sentence followed by longer one
+                modified.push(firstPart + '.');
+                modified.push(secondPart.charAt(0).toUpperCase() + secondPart.slice(1));
+                continue;
+            }
+        }
+
+        // Occasionally create very short emphatic sentences
+        if (wordCount > 15 && globalRandom.next() < 0.10 && i < sentences.length - 1) {
+            const shortPhrases = [
+                'Indeed.',
+                'Precisely.',
+                'Exactly.',
+                'True.',
+                'Right.',
+                'Absolutely.',
+            ];
+            modified.push(sentence);
+            modified.push(globalRandom.choice(shortPhrases));
+            continue;
+        }
+
+        modified.push(sentence);
+    }
+
+    return modified.join(' ');
 }
 
 // Introduce varied punctuation patterns
@@ -448,8 +678,8 @@ function addFillerWords(text: string): string {
 
     const sentences = text.split('. ');
     const modifiedSentences = sentences.map((sentence) => {
-        // Add filler words to some sentences (15% chance)
-        if (globalRandom.next() < 0.15 && sentence.length > 30) {
+        // Add filler words to some sentences (25% chance - optimized for 80%+)
+        if (globalRandom.next() < 0.25 && sentence.length > 30) {
             const filler = globalRandom.choice(fillers);
             // Insert at the beginning or after first comma
             if (sentence.includes(',')) {
@@ -556,38 +786,57 @@ function addInterjections(text: string): string {
     return modifiedParagraphs.join('\n\n');
 }
 
-// Completely rewrite the first paragraph with a different approach
-// Keep first paragraph clear and topic-focused (minimal changes for clarity)
+// Improved first paragraph handling - make it more natural and engaging
 function rewriteFirstParagraph(text: string): string {
     // Split text into paragraphs
     const paragraphs = text.split('\n\n').filter(p => p.trim().length > 0);
 
     if (paragraphs.length === 0) return text;
 
-    const firstParagraph = paragraphs[0];
+    let firstParagraph = paragraphs[0];
 
-    // KEEP INTRODUCTION MOSTLY UNCHANGED FOR CLARITY
-    // Only apply minimal, safe transformations
+    // Remove contrasting/conditional words that weaken the opening
+    const avoidWords = ['Although', 'Though', 'While', 'Whereas', 'Despite', 'However', 'Nevertheless', 'Yet', 'Even though', 'Even if'];
 
-    // Avoid starting with contrasting/conditional words
-    const avoidWords = ['Although', 'Though', 'While', 'Whereas', 'Despite', 'However', 'Nevertheless', 'Yet'];
-
-    // Check if it starts with a bad word and fix it
-    let cleanedParagraph = firstParagraph;
     avoidWords.forEach(word => {
         const pattern = new RegExp(`^${word}\\s+`, 'i');
-        if (pattern.test(cleanedParagraph)) {
-            // Remove the contrasting word
-            cleanedParagraph = cleanedParagraph.replace(pattern, '');
-            // Capitalize first letter
-            cleanedParagraph = cleanedParagraph.charAt(0).toUpperCase() + cleanedParagraph.slice(1);
+        if (pattern.test(firstParagraph)) {
+            // Remove the contrasting word and capitalize
+            firstParagraph = firstParagraph.replace(pattern, '');
+            firstParagraph = firstParagraph.charAt(0).toUpperCase() + firstParagraph.slice(1);
         }
     });
 
-    // That's it! Keep the introduction clear and simple
-    // No rewriting, no restructuring, just ensure it's clean
+    // Make the opening more direct and engaging
+    const sentences = firstParagraph.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
 
-    paragraphs[0] = cleanedParagraph;
+    if (sentences.length > 0) {
+        let firstSentence = sentences[0];
+
+        // Remove redundant phrases from the first sentence
+        const redundantPhrases = [
+            /^It is important to note that\s+/i,
+            /^It should be noted that\s+/i,
+            /^It is worth noting that\s+/i,
+            /^One should note that\s+/i,
+            /^It is clear that\s+/i,
+            /^It is evident that\s+/i,
+            /^It can be said that\s+/i,
+            /^One might say that\s+/i,
+        ];
+
+        redundantPhrases.forEach(pattern => {
+            if (pattern.test(firstSentence)) {
+                firstSentence = firstSentence.replace(pattern, '');
+                firstSentence = firstSentence.charAt(0).toUpperCase() + firstSentence.slice(1);
+            }
+        });
+
+        sentences[0] = firstSentence;
+        firstParagraph = sentences.join(' ');
+    }
+
+    paragraphs[0] = firstParagraph;
     return paragraphs.join('\n\n');
 }
 
@@ -725,7 +974,62 @@ function rewriteConcludingParagraph(text: string): string {
     return paragraphs.join('\n\n');
 }
 
-// Grammar and spelling correction function
+// Remove repeated words and sentences for cleaner text
+function removeRepetitions(text: string): string {
+    let cleaned = text;
+
+    // Remove repeated words (e.g., "the the" -> "the")
+    cleaned = cleaned.replace(/\b(\w+)\s+\1\b/gi, '$1');
+
+    // Remove repeated phrases (3+ words repeated)
+    const sentences = cleaned.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
+    const seenSentences = new Set<string>();
+    const uniqueSentences: string[] = [];
+
+    sentences.forEach(sentence => {
+        // Normalize sentence for comparison (lowercase, remove punctuation)
+        const normalized = sentence.toLowerCase().replace(/[.,;:!?]/g, '').trim();
+
+        // Check if we've seen this sentence or a very similar one
+        let isDuplicate = false;
+        for (const seen of seenSentences) {
+            // Calculate similarity (simple word overlap check)
+            const words1 = normalized.split(/\s+/);
+            const words2 = seen.split(/\s+/);
+
+            // If sentences are very similar (>80% word overlap), consider it a duplicate
+            if (words1.length > 5 && words2.length > 5) {
+                const commonWords = words1.filter(w => words2.includes(w)).length;
+                const similarity = commonWords / Math.max(words1.length, words2.length);
+
+                if (similarity > 0.8) {
+                    isDuplicate = true;
+                    break;
+                }
+            }
+        }
+
+        if (!isDuplicate) {
+            uniqueSentences.push(sentence);
+            seenSentences.add(normalized);
+        }
+    });
+
+    cleaned = uniqueSentences.join(' ');
+
+    // Remove repeated short phrases within sentences
+    cleaned = cleaned.replace(/\b(\w+\s+\w+)\s+\1\b/gi, '$1');
+
+    // Remove excessive commas (more than one in a row)
+    cleaned = cleaned.replace(/,\s*,+/g, ',');
+
+    // Remove repeated punctuation
+    cleaned = cleaned.replace(/([.!?])\1+/g, '$1');
+
+    return cleaned;
+}
+
+// Enhanced grammar and spelling correction function
 function fixGrammarAndSpelling(text: string): string {
     let corrected = text;
 
@@ -760,8 +1064,10 @@ function fixGrammarAndSpelling(text: string): string {
         { pattern: /\bshouldnt\b/gi, replacement: "shouldn't" },
         { pattern: /\bwouldnt\b/gi, replacement: "wouldn't" },
         { pattern: /\bcouldnt\b/gi, replacement: "couldn't" },
+        { pattern: /\bmustnt\b/gi, replacement: "mustn't" },
+        { pattern: /\bhadnt\b/gi, replacement: "hadn't" },
 
-        // Fix common spelling errors
+        // Fix common spelling errors - comprehensive list
         { pattern: /\brecieve\b/gi, replacement: 'receive' },
         { pattern: /\boccured\b/gi, replacement: 'occurred' },
         { pattern: /\boccuring\b/gi, replacement: 'occurring' },
@@ -778,14 +1084,91 @@ function fixGrammarAndSpelling(text: string): string {
         { pattern: /\bbeleive\b/gi, replacement: 'believe' },
         { pattern: /\benvironment\b/gi, replacement: 'environment' },
         { pattern: /\bgovernment\b/gi, replacement: 'government' },
+        { pattern: /\bneccessary\b/gi, replacement: 'necessary' },
+        { pattern: /\boccassion\b/gi, replacement: 'occasion' },
+        { pattern: /\bprivelege\b/gi, replacement: 'privilege' },
+        { pattern: /\bpublically\b/gi, replacement: 'publicly' },
+        { pattern: /\bquantity\b/gi, replacement: 'quantity' },
+        { pattern: /\brecommend\b/gi, replacement: 'recommend' },
+        { pattern: /\brefered\b/gi, replacement: 'referred' },
+        { pattern: /\brelevant\b/gi, replacement: 'relevant' },
+        { pattern: /\brhythm\b/gi, replacement: 'rhythm' },
+        { pattern: /\bschedule\b/gi, replacement: 'schedule' },
+        { pattern: /\bsuccessful\b/gi, replacement: 'successful' },
+        { pattern: /\bsupercede\b/gi, replacement: 'supersede' },
+        { pattern: /\bsurprise\b/gi, replacement: 'surprise' },
+        { pattern: /\btendancy\b/gi, replacement: 'tendency' },
+        { pattern: /\btommorow\b/gi, replacement: 'tomorrow' },
+        { pattern: /\btruely\b/gi, replacement: 'truly' },
+        { pattern: /\bvacuum\b/gi, replacement: 'vacuum' },
+        { pattern: /\bwether\b/gi, replacement: 'whether' },
+        { pattern: /\bwhich\b/gi, replacement: 'which' },
+        { pattern: /\bwritting\b/gi, replacement: 'writing' },
+        { pattern: /\byeild\b/gi, replacement: 'yield' },
+        { pattern: /\baccomodate\b/gi, replacement: 'accommodate' },
+        { pattern: /\bacquaintance\b/gi, replacement: 'acquaintance' },
+        { pattern: /\bacquire\b/gi, replacement: 'acquire' },
+        { pattern: /\bacross\b/gi, replacement: 'across' },
+        { pattern: /\baggressive\b/gi, replacement: 'aggressive' },
+        { pattern: /\balot\b/gi, replacement: 'a lot' },
+        { pattern: /\bamateur\b/gi, replacement: 'amateur' },
+        { pattern: /\bapparent\b/gi, replacement: 'apparent' },
+        { pattern: /\bargument\b/gi, replacement: 'argument' },
+        { pattern: /\bathlete\b/gi, replacement: 'athlete' },
+        { pattern: /\bbeginning\b/gi, replacement: 'beginning' },
+        { pattern: /\bcalendar\b/gi, replacement: 'calendar' },
+        { pattern: /\bcategory\b/gi, replacement: 'category' },
+        { pattern: /\bcommittee\b/gi, replacement: 'committee' },
+        { pattern: /\bconscience\b/gi, replacement: 'conscience' },
+        { pattern: /\bconscious\b/gi, replacement: 'conscious' },
+        { pattern: /\bconsensus\b/gi, replacement: 'consensus' },
+        { pattern: /\bdevelopment\b/gi, replacement: 'development' },
+        { pattern: /\bdiscipline\b/gi, replacement: 'discipline' },
+        { pattern: /\bembarrass\b/gi, replacement: 'embarrass' },
+        { pattern: /\bequipment\b/gi, replacement: 'equipment' },
+        { pattern: /\bexaggerate\b/gi, replacement: 'exaggerate' },
+        { pattern: /\bexperience\b/gi, replacement: 'experience' },
+        { pattern: /\bfascinate\b/gi, replacement: 'fascinate' },
+        { pattern: /\bforeigners\b/gi, replacement: 'foreigners' },
+        { pattern: /\bfourty\b/gi, replacement: 'forty' },
+        { pattern: /\bgauge\b/gi, replacement: 'gauge' },
+        { pattern: /\bgrateful\b/gi, replacement: 'grateful' },
+        { pattern: /\bguarantee\b/gi, replacement: 'guarantee' },
+        { pattern: /\bharass\b/gi, replacement: 'harass' },
+        { pattern: /\bheight\b/gi, replacement: 'height' },
+        { pattern: /\bhierarchy\b/gi, replacement: 'hierarchy' },
+        { pattern: /\bignorance\b/gi, replacement: 'ignorance' },
+        { pattern: /\bimmediate\b/gi, replacement: 'immediate' },
+        { pattern: /\bindependent\b/gi, replacement: 'independent' },
+        { pattern: /\bintelligence\b/gi, replacement: 'intelligence' },
+        { pattern: /\binterest\b/gi, replacement: 'interest' },
+        { pattern: /\bjewelry\b/gi, replacement: 'jewelry' },
+        { pattern: /\bjudgment\b/gi, replacement: 'judgment' },
+        { pattern: /\bknowledge\b/gi, replacement: 'knowledge' },
+        { pattern: /\blicence\b/gi, replacement: 'license' },
+        { pattern: /\bmaintenance\b/gi, replacement: 'maintenance' },
+        { pattern: /\bmedieval\b/gi, replacement: 'medieval' },
+        { pattern: /\bmillennium\b/gi, replacement: 'millennium' },
+        { pattern: /\bminiature\b/gi, replacement: 'miniature' },
+        { pattern: /\bmischievous\b/gi, replacement: 'mischievous' },
+        { pattern: /\bnoticeable\b/gi, replacement: 'noticeable' },
+        { pattern: /\boccurrence\b/gi, replacement: 'occurrence' },
+        { pattern: /\bperseverance\b/gi, replacement: 'perseverance' },
+        { pattern: /\bpersistence\b/gi, replacement: 'persistence' },
+        { pattern: /\bpossession\b/gi, replacement: 'possession' },
+        { pattern: /\bprecedence\b/gi, replacement: 'precedence' },
+        { pattern: /\bprejudice\b/gi, replacement: 'prejudice' },
 
         // Fix subject-verb agreement issues (common patterns)
         { pattern: /\b(he|she|it)\s+are\b/gi, replacement: '$1 is' },
         { pattern: /\b(they|we)\s+is\b/gi, replacement: '$1 are' },
+        { pattern: /\b(I)\s+is\b/gi, replacement: '$1 am' },
+        { pattern: /\b(you)\s+is\b/gi, replacement: '$1 are' },
 
         // Fix double negatives (common academic errors)
         { pattern: /\bdon't\s+have\s+no\b/gi, replacement: "don't have any" },
         { pattern: /\bcan't\s+hardly\b/gi, replacement: "can hardly" },
+        { pattern: /\bcan't\s+barely\b/gi, replacement: "can barely" },
 
         // Fix comma splices (basic detection)
         { pattern: /,\s+(however|therefore|thus|consequently|nevertheless)\s+/gi, replacement: '; $1, ' },
@@ -797,6 +1180,7 @@ function fixGrammarAndSpelling(text: string): string {
         { pattern: /\.{2,}/g, replacement: '.' },
         { pattern: /!{2,}/g, replacement: '!' },
         { pattern: /\?{2,}/g, replacement: '?' },
+        { pattern: /,{2,}/g, replacement: ',' },
 
         // Fix spacing around quotes
         { pattern: /"\s+/g, replacement: '"' },
@@ -806,6 +1190,21 @@ function fixGrammarAndSpelling(text: string): string {
         { pattern: /\bthen\s+(I|he|she|it|they|we)\s+(am|is|are|was|were)\b/gi, replacement: 'than $1 $2' },
         { pattern: /\beffect\s+(on|upon)\b/gi, replacement: 'affect $1' },
         { pattern: /\byour\s+(going|coming|doing)\b/gi, replacement: "you're $1" },
+        { pattern: /\bto\s+(much|many)\b/gi, replacement: 'too $1' },
+        { pattern: /\blose\s+(weight|money|time)\b/gi, replacement: 'lose $1' },
+        { pattern: /\baccept\s+(for|from)\b/gi, replacement: 'accept $1' },
+        { pattern: /\badvice\s+(someone)\b/gi, replacement: 'advise $1' },
+        { pattern: /\bbreath\s+(deeply)\b/gi, replacement: 'breathe $1' },
+        { pattern: /\bcompliment\s+(each other)\b/gi, replacement: 'complement $1' },
+
+        // Fix possessive errors
+        { pattern: /\bits'\b/g, replacement: 'its' },
+        { pattern: /\bwhos\b/gi, replacement: "who's" },
+        { pattern: /\bwhose\s+(is|are)\b/gi, replacement: "who's $1" },
+
+        // Fix article errors
+        { pattern: /\ba\s+([aeiou])/gi, replacement: 'an $1' },
+        { pattern: /\ban\s+([^aeiou])/gi, replacement: 'a $1' },
     ];
 
     // Apply all grammar rules
@@ -827,46 +1226,123 @@ function fixGrammarAndSpelling(text: string): string {
         return sentence;
     }).join(' ');
 
-    // Final cleanup
+    // Final cleanup - remove any remaining double spaces
+    corrected = corrected.replace(/\s{2,}/g, ' ');
     corrected = corrected.trim();
 
     return corrected;
 }
 
-// Paraphrase sentences while maintaining academic tone and meaning
+// Enhanced paraphrase sentences while maintaining academic tone and meaning
 function paraphraseSentences(text: string, aggressiveness: 'medium' | 'heavy'): string {
     const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
 
     const synonymMap: { [key: string]: string[] } = {
-        'important': ['significant', 'crucial', 'essential', 'vital', 'critical'],
-        'shows': ['demonstrates', 'illustrates', 'reveals', 'indicates', 'exhibits'],
-        'uses': ['utilizes', 'employs', 'applies', 'implements', 'leverages'],
-        'helps': ['facilitates', 'assists', 'aids', 'supports', 'enables'],
-        'makes': ['creates', 'produces', 'generates', 'establishes', 'forms'],
-        'gives': ['provides', 'offers', 'presents', 'supplies', 'delivers'],
-        'gets': ['obtains', 'acquires', 'receives', 'secures', 'gains'],
-        'big': ['substantial', 'considerable', 'significant', 'extensive', 'major'],
-        'small': ['minor', 'limited', 'modest', 'minimal', 'negligible'],
-        'good': ['beneficial', 'advantageous', 'favorable', 'positive', 'effective'],
-        'bad': ['detrimental', 'adverse', 'unfavorable', 'negative', 'problematic'],
-        'many': ['numerous', 'multiple', 'various', 'several', 'abundant'],
-        'different': ['diverse', 'varied', 'distinct', 'alternative', 'disparate'],
-        'same': ['identical', 'equivalent', 'similar', 'comparable', 'analogous'],
-        'new': ['novel', 'recent', 'contemporary', 'modern', 'emerging'],
-        'old': ['established', 'traditional', 'conventional', 'historical', 'longstanding'],
-        'very': ['highly', 'extremely', 'particularly', 'notably', 'remarkably'],
-        'also': ['additionally', 'furthermore', 'moreover', 'likewise', 'similarly'],
-        'because': ['since', 'as', 'due to', 'owing to', 'given that'],
-        'but': ['however', 'nevertheless', 'nonetheless', 'yet', 'although'],
-        'so': ['therefore', 'thus', 'consequently', 'accordingly', 'hence'],
-        'and': ['as well as', 'along with', 'together with', 'in addition to', 'coupled with'],
+        'important': ['significant', 'crucial', 'essential', 'vital', 'critical', 'key', 'pivotal'],
+        'shows': ['demonstrates', 'illustrates', 'reveals', 'indicates', 'exhibits', 'displays', 'manifests'],
+        'uses': ['utilizes', 'employs', 'applies', 'implements', 'leverages', 'adopts', 'harnesses'],
+        'helps': ['facilitates', 'assists', 'aids', 'supports', 'enables', 'promotes', 'fosters'],
+        'makes': ['creates', 'produces', 'generates', 'establishes', 'forms', 'constructs', 'develops'],
+        'gives': ['provides', 'offers', 'presents', 'supplies', 'delivers', 'furnishes', 'grants'],
+        'gets': ['obtains', 'acquires', 'receives', 'secures', 'gains', 'attains', 'procures'],
+        'big': ['substantial', 'considerable', 'significant', 'extensive', 'major', 'large', 'sizable'],
+        'small': ['minor', 'limited', 'modest', 'minimal', 'negligible', 'slight', 'marginal'],
+        'good': ['beneficial', 'advantageous', 'favorable', 'positive', 'effective', 'valuable', 'constructive'],
+        'bad': ['detrimental', 'adverse', 'unfavorable', 'negative', 'problematic', 'harmful', 'damaging'],
+        'many': ['numerous', 'multiple', 'various', 'several', 'abundant', 'countless', 'myriad'],
+        'different': ['diverse', 'varied', 'distinct', 'alternative', 'disparate', 'dissimilar', 'contrasting'],
+        'same': ['identical', 'equivalent', 'similar', 'comparable', 'analogous', 'parallel', 'corresponding'],
+        'new': ['novel', 'recent', 'contemporary', 'modern', 'emerging', 'fresh', 'innovative'],
+        'old': ['established', 'traditional', 'conventional', 'historical', 'longstanding', 'classic', 'time-honored'],
+        'very': ['highly', 'extremely', 'particularly', 'notably', 'remarkably', 'exceptionally', 'considerably'],
+        'also': ['additionally', 'furthermore', 'moreover', 'likewise', 'similarly', 'equally', 'correspondingly'],
+        'because': ['since', 'as', 'due to', 'owing to', 'given that', 'considering that', 'in light of'],
+        'but': ['however', 'nevertheless', 'nonetheless', 'yet', 'although', 'though', 'whereas'],
+        'so': ['therefore', 'thus', 'consequently', 'accordingly', 'hence', 'as a result', 'for this reason'],
+        'and': ['as well as', 'along with', 'together with', 'in addition to', 'coupled with', 'plus', 'combined with'],
+        'think': ['believe', 'consider', 'suppose', 'assume', 'reckon', 'presume', 'surmise'],
+        'know': ['understand', 'recognize', 'realize', 'comprehend', 'grasp', 'perceive', 'discern'],
+        'say': ['state', 'assert', 'declare', 'mention', 'express', 'articulate', 'convey'],
+        'see': ['observe', 'notice', 'perceive', 'witness', 'detect', 'discern', 'recognize'],
+        'find': ['discover', 'locate', 'identify', 'determine', 'ascertain', 'uncover', 'detect'],
+        'tell': ['inform', 'notify', 'advise', 'communicate', 'relate', 'convey', 'disclose'],
+        'ask': ['inquire', 'question', 'query', 'request', 'seek', 'solicit', 'petition'],
+        'work': ['function', 'operate', 'perform', 'execute', 'labor', 'toil', 'endeavor'],
+        'seem': ['appear', 'look', 'sound', 'feel', 'come across', 'strike one as', 'give the impression'],
+        'feel': ['sense', 'perceive', 'experience', 'undergo', 'encounter', 'detect', 'discern'],
+        'try': ['attempt', 'endeavor', 'strive', 'seek', 'aim', 'undertake', 'venture'],
+        'leave': ['depart', 'exit', 'abandon', 'vacate', 'withdraw', 'retreat', 'evacuate'],
+        'call': ['name', 'designate', 'term', 'label', 'dub', 'christen', 'entitle'],
+        'keep': ['maintain', 'retain', 'preserve', 'sustain', 'uphold', 'continue', 'persist'],
+        'let': ['allow', 'permit', 'enable', 'authorize', 'sanction', 'grant', 'approve'],
+        'begin': ['start', 'commence', 'initiate', 'launch', 'embark', 'undertake', 'inaugurate'],
+        'start': ['begin', 'commence', 'initiate', 'launch', 'embark', 'kick off', 'set out'],
+        'run': ['operate', 'manage', 'conduct', 'administer', 'direct', 'oversee', 'supervise'],
+        'move': ['shift', 'transfer', 'relocate', 'transport', 'migrate', 'transition', 'progress'],
+        'live': ['reside', 'dwell', 'inhabit', 'occupy', 'settle', 'lodge', 'abide'],
+        'believe': ['think', 'suppose', 'assume', 'presume', 'consider', 'hold', 'maintain'],
+        'bring': ['carry', 'transport', 'convey', 'deliver', 'fetch', 'bear', 'transfer'],
+        'happen': ['occur', 'take place', 'transpire', 'arise', 'come about', 'materialize', 'develop'],
+        'write': ['compose', 'author', 'draft', 'pen', 'inscribe', 'record', 'document'],
+        'provide': ['supply', 'furnish', 'offer', 'give', 'present', 'deliver', 'contribute'],
+        'sit': ['be seated', 'rest', 'perch', 'settle', 'position oneself', 'take a seat', 'be situated'],
+        'stand': ['rise', 'be upright', 'remain', 'endure', 'tolerate', 'withstand', 'persist'],
+        'lose': ['misplace', 'forfeit', 'surrender', 'relinquish', 'sacrifice', 'waste', 'squander'],
+        'pay': ['compensate', 'remunerate', 'reimburse', 'settle', 'disburse', 'expend', 'contribute'],
+        'meet': ['encounter', 'come across', 'run into', 'convene', 'assemble', 'gather', 'congregate'],
+        'include': ['comprise', 'contain', 'encompass', 'incorporate', 'embody', 'involve', 'embrace'],
+        'continue': ['proceed', 'persist', 'carry on', 'maintain', 'sustain', 'persevere', 'endure'],
+        'set': ['establish', 'determine', 'fix', 'arrange', 'position', 'place', 'situate'],
+        'learn': ['discover', 'ascertain', 'master', 'acquire', 'grasp', 'comprehend', 'absorb'],
+        'change': ['alter', 'modify', 'transform', 'convert', 'adjust', 'adapt', 'revise'],
+        'lead': ['guide', 'direct', 'head', 'command', 'govern', 'manage', 'supervise'],
+        'understand': ['comprehend', 'grasp', 'perceive', 'recognize', 'appreciate', 'fathom', 'discern'],
+        'watch': ['observe', 'view', 'monitor', 'survey', 'examine', 'scrutinize', 'inspect'],
+        'follow': ['pursue', 'track', 'trail', 'shadow', 'succeed', 'come after', 'ensue'],
+        'stop': ['cease', 'halt', 'discontinue', 'terminate', 'end', 'conclude', 'finish'],
+        'create': ['generate', 'produce', 'make', 'form', 'construct', 'build', 'develop'],
+        'speak': ['talk', 'converse', 'communicate', 'articulate', 'express', 'voice', 'utter'],
+        'read': ['peruse', 'study', 'examine', 'review', 'scan', 'browse', 'scrutinize'],
+        'allow': ['permit', 'enable', 'authorize', 'sanction', 'approve', 'consent', 'grant'],
+        'add': ['append', 'attach', 'include', 'incorporate', 'insert', 'supplement', 'augment'],
+        'spend': ['expend', 'disburse', 'allocate', 'invest', 'devote', 'dedicate', 'consume'],
+        'grow': ['expand', 'increase', 'develop', 'flourish', 'thrive', 'prosper', 'advance'],
+        'open': ['unlock', 'unseal', 'uncover', 'reveal', 'expose', 'initiate', 'commence'],
+        'walk': ['stroll', 'amble', 'stride', 'pace', 'march', 'trek', 'wander'],
+        'win': ['triumph', 'prevail', 'succeed', 'conquer', 'overcome', 'achieve', 'attain'],
+        'offer': ['provide', 'present', 'propose', 'suggest', 'tender', 'extend', 'submit'],
+        'remember': ['recall', 'recollect', 'reminisce', 'retain', 'bear in mind', 'keep in mind', 'think back'],
+        'love': ['adore', 'cherish', 'treasure', 'value', 'appreciate', 'prize', 'hold dear'],
+        'consider': ['contemplate', 'ponder', 'reflect', 'deliberate', 'weigh', 'examine', 'evaluate'],
+        'appear': ['seem', 'look', 'emerge', 'surface', 'materialize', 'manifest', 'present'],
+        'buy': ['purchase', 'acquire', 'obtain', 'procure', 'secure', 'invest in', 'get'],
+        'wait': ['pause', 'delay', 'hold', 'remain', 'stay', 'linger', 'tarry'],
+        'serve': ['assist', 'help', 'aid', 'support', 'cater', 'provide', 'supply'],
+        'die': ['perish', 'expire', 'pass away', 'decease', 'succumb', 'depart', 'cease'],
+        'send': ['dispatch', 'transmit', 'forward', 'deliver', 'convey', 'ship', 'mail'],
+        'expect': ['anticipate', 'foresee', 'predict', 'await', 'look forward to', 'envision', 'project'],
+        'build': ['construct', 'erect', 'assemble', 'create', 'establish', 'develop', 'form'],
+        'stay': ['remain', 'continue', 'persist', 'endure', 'linger', 'abide', 'reside'],
+        'fall': ['drop', 'descend', 'plunge', 'tumble', 'decline', 'decrease', 'diminish'],
+        'cut': ['slice', 'sever', 'divide', 'split', 'trim', 'reduce', 'decrease'],
+        'reach': ['attain', 'achieve', 'arrive at', 'get to', 'access', 'contact', 'touch'],
+        'kill': ['slay', 'murder', 'eliminate', 'destroy', 'terminate', 'end', 'extinguish'],
+        'remain': ['stay', 'continue', 'persist', 'endure', 'last', 'linger', 'abide'],
+        'suggest': ['propose', 'recommend', 'advise', 'advocate', 'indicate', 'imply', 'hint'],
+        'raise': ['lift', 'elevate', 'hoist', 'increase', 'boost', 'enhance', 'heighten'],
+        'pass': ['go by', 'elapse', 'proceed', 'move', 'transfer', 'hand over', 'convey'],
+        'sell': ['market', 'trade', 'vend', 'retail', 'merchandise', 'peddle', 'offer'],
+        'require': ['need', 'demand', 'necessitate', 'call for', 'entail', 'involve', 'mandate'],
+        'report': ['announce', 'declare', 'state', 'communicate', 'relay', 'disclose', 'reveal'],
+        'decide': ['determine', 'resolve', 'conclude', 'settle', 'choose', 'opt', 'elect'],
+        'pull': ['drag', 'tug', 'haul', 'draw', 'yank', 'tow', 'extract'],
     };
 
     const paraphrased = sentences.map(sentence => {
         let modified = sentence;
 
         // Apply synonym replacement based on aggressiveness
-        const replacementChance = aggressiveness === 'heavy' ? 0.6 : 0.4;
+        const replacementChance = aggressiveness === 'heavy' ? 0.7 : 0.5;
 
         Object.keys(synonymMap).forEach(word => {
             const regex = new RegExp(`\\b${word}\\b`, 'gi');
@@ -890,12 +1366,13 @@ function paraphraseSentences(text: string, aggressiveness: 'medium' | 'heavy'): 
     return paraphrased.join(' ');
 }
 
-// Add grammatical errors for more human-like text
+// Add MINIMAL grammatical errors for human-like text - SIGNIFICANTLY REDUCED
 function addGrammaticalErrors(text: string, intensity: 'light' | 'medium' | 'heavy'): string {
+    // DRASTICALLY REDUCED errors - almost none, focus on natural variation instead
     const errorChances = {
-        light: 0.005,     // 0.5% chance per sentence (reduced from 1%)
-        medium: 0.008,    // 0.8% chance per sentence (reduced from 2%)
-        heavy: 0.012      // 1.2% chance per sentence (reduced from 3%)
+        light: 0.0005,    // 0.05% per sentence - essentially none
+        medium: 0.001,    // 0.1% per sentence - extremely rare
+        heavy: 0.002      // 0.2% per sentence - very rare
     };
 
     const errorChance = errorChances[intensity];
@@ -904,27 +1381,9 @@ function addGrammaticalErrors(text: string, intensity: 'light' | 'medium' | 'hea
     const modified = sentences.map(sentence => {
         if (globalRandom.next() > errorChance) return sentence;
 
-        let errorSentence = sentence;
-
-        // Apply VERY MINIMAL grammatical errors - only the most subtle ones
-        const selectedErrors = globalRandom.shuffle([
-            // Its vs It's (very subtle)
-            () => {
-                errorSentence = errorSentence.replace(/\bit's\b/gi, (match: string) => {
-                    return globalRandom.next() < 0.15 ? 'its' : match;
-                });
-            },
-            // Then vs Than (very subtle)
-            () => {
-                errorSentence = errorSentence.replace(/\bthen\b/gi, (match: string) => {
-                    return globalRandom.next() < 0.15 ? 'than' : match;
-                });
-            },
-        ]).slice(0, 1); // Apply only 1 error per sentence
-
-        selectedErrors.forEach(error => error());
-
-        return errorSentence;
+        // Skip - errors are now so rare they're essentially disabled
+        // This focuses on natural variation through other techniques instead
+        return sentence;
     });
 
     return modified.join(' ');
@@ -1577,129 +2036,16 @@ function createFrequentSentenceBreaks(text: string, breakIntensity: 'light' | 'm
     return modified.join(' ');
 }
 
-// Introduce occasional spelling mistakes for authenticity
+// Introduce MINIMAL spelling mistakes for authenticity - SIGNIFICANTLY REDUCED
 function introduceSpellingMistakes(text: string, intensity: 'light' | 'medium' | 'heavy'): string {
+    // DRASTICALLY REDUCED typing error rates - extremely subtle, almost none
     const mistakeChances = {
-        light: 0.04,      // 4% chance per word (increased from 3%)
-        medium: 0.06,     // 6% chance per word (increased from 5%)
-        heavy: 0.10       // 10% chance per word (increased from 8%)
+        light: 0.001,     // 0.1% per word - almost never
+        medium: 0.002,    // 0.2% per word - extremely rare
+        heavy: 0.003      // 0.3% per word - very rare
     };
 
     const mistakeChance = mistakeChances[intensity];
-
-    // Common spelling mistakes that humans make
-    const commonMistakes: { [key: string]: string[] } = {
-        'the': ['teh', 'thee', 'te'],
-        'receive': ['recieve', 'recive'],
-        'occurred': ['occured', 'ocurred'],
-        'separate': ['seperate', 'seperete'],
-        'definitely': ['definately', 'definitly'],
-        'accommodate': ['accomodate', 'acommodate'],
-        'necessary': ['neccessary', 'necesary'],
-        'immediately': ['imediately', 'immeditaly'],
-        'questionnaire': ['questionaire', 'questionair'],
-        'embarrass': ['embarass', 'embarras'],
-        'occurrence': ['occurance', 'occurence'],
-        'rhythm': ['rythm', 'rhytm'],
-        'conscience': ['concience', 'consciance'],
-        'bureaucracy': ['burocracy', 'bureauracy'],
-        'maintenance': ['maintainence', 'maintenence'],
-        'relevant': ['relevent', 'relevant'],
-        'privilege': ['privilage', 'privelege'],
-        'medieval': ['medival', 'medeval'],
-        'vacuum': ['vaccuum', 'vacuume'],
-        'parliament': ['parlament', 'parliment'],
-        'beginning': ['begining', 'begining'],
-        'until': ['untill', 'untol'],
-        'whether': ['wether', 'wheather'],
-        'than': ['then', 'tahn'],
-        'their': ['thier', 'theyr'],
-        'through': ['thorugh', 'thru', 'threw'],
-        'which': ['wich', 'whick'],
-        'different': ['diferent', 'diference'],
-        'believe': ['beleive', 'belive'],
-        'achieve': ['acheive', 'achive'],
-        'friend': ['frend', 'freind'],
-        'student': ['studet', 'studnet'],
-        'probably': ['probaly', 'probibly'],
-        'although': ['altho', 'altough'],
-        'environment': ['enviroment', 'enviornment'],
-        'government': ['goverment', 'govenment'],
-        'important': ['importent', 'imporant'],
-        'development': ['developement', 'developmenet'],
-        'experience': ['experiance', 'experiance'],
-        'interest': ['intreset', 'intrest'],
-        'available': ['avalable', 'availible'],
-        'successful': ['sucessful', 'successfull'],
-        'information': ['informaton', 'infromation'],
-        'knowledge': ['knowlege', 'knwoledge'],
-        'understand': ['undrestand', 'undestand'],
-        'children': ['childern', 'childer'],
-        'address': ['adress', 'addres'],
-        'possible': ['possable', 'posible'],
-        'society': ['socity', 'sosiety'],
-        'and': ['adn', 'nd'],
-        'become': ['becaome', 'becom'],
-        'because': ['becuase', 'becasue'],
-        'before': ['befor', 'befroe'],
-        'change': ['chage', 'chnage'],
-        'choice': ['chocie', 'choise'],
-        'country': ['contry', 'coutry'],
-        'decision': ['desicion', 'decison'],
-        'during': ['dureing', 'durint'],
-        'effect': ['affect', 'efect'],
-        'finally': ['finaly', 'finnally'],
-        'figure': ['figuer', 'figer'],
-        'general': ['genral', 'generel'],
-        'however': ['howver', 'howevre'],
-        'including': ['inclding', 'includng'],
-        'language': ['langauge', 'languge'],
-        'material': ['materiel', 'matrial'],
-        'national': ['natinal', 'nationel'],
-        'occur': ['ocur', 'occure'],
-        'perform': ['perfrom', 'preform'],
-        'personal': ['personel', 'personall'],
-        'project': ['projekt', 'projct'],
-        'provide': ['provde', 'proviide'],
-        'question': ['questoin', 'quesiton'],
-        'reason': ['reson', 'resaon'],
-        'reduce': ['reduse', 'reduec'],
-        'remember': ['remeber', 'remembr'],
-        'research': ['reserch', 'reseach'],
-        'require': ['requir', 'requiers'],
-        'result': ['resilt', 'reuslt'],
-        'science': ['sceince', 'sciene'],
-        'several': ['serveral', 'sevral'],
-        'should': ['shuld', 'shoud'],
-        'similar': ['simlar', 'similiar'],
-        'specific': ['speficic', 'specifc'],
-        'standard': ['standart', 'standerd'],
-        'structure': ['structur', 'structer'],
-        'subject': ['subjct', 'subjecct'],
-        'sufficient': ['suficient', 'sufficent'],
-        'suggest': ['sugest', 'sugggest'],
-        'support': ['suport', 'suppport'],
-        'suppose': ['supose', 'suppse'],
-        'surface': ['surfce', 'serface'],
-        'therefore': ['therefor', 'theerfore'],
-        'thought': ['thoguht', 'thought'],
-        'throughout': ['throught', 'throughout'],
-        'together': ['togther', 'togetehr'],
-        'training': ['trainng', 'trainging'],
-        'transfer': ['tranfer', 'transffer'],
-        'treatment': ['treatmnt', 'tretment'],
-        'typical': ['typicle', 'typicall'],
-        'usually': ['usualy', 'ussualy'],
-        'various': ['varrius', 'varous'],
-        'version': ['versoin', 'verson'],
-        'violence': ['violance', 'violense'],
-        'visible': ['visable', 'visiable'],
-        'weight': ['wieght', 'wieght'],
-        'western': ['westen', 'westeren'],
-        'without': ['witout', 'withotu'],
-        'writing': ['writting', 'writng'],
-    };
-
     const words = text.split(/(\s+)/);
 
     const modified = words.map(word => {
@@ -1710,46 +2056,22 @@ function introduceSpellingMistakes(text: string, intensity: 'light' | 'medium' |
         const punctuation = word.match(/[.!?,;:\-—]*$/)?.[0] || '';
         const cleanWord = word.slice(0, word.length - punctuation.length);
 
-        // Check if this word has a mistake variant
-        const lowerWord = cleanWord.toLowerCase();
+        // Only apply to longer words (less suspicious) and increase minimum length
+        if (cleanWord.length < 7) return word;
 
-        // Look for exact match (case-insensitive)
-        let hasVariant = false;
-        let selectedMistake = '';
-
-        for (const [original, mistakes] of Object.entries(commonMistakes)) {
-            if (lowerWord === original && globalRandom.next() < mistakeChance) {
-                selectedMistake = globalRandom.choice(globalRandom.shuffle(mistakes));
-                hasVariant = true;
-                break;
-            }
-        }
-
-        if (hasVariant) {
-            // Preserve original capitalization
-            let result = selectedMistake;
-            if (cleanWord[0] === cleanWord[0].toUpperCase()) {
-                result = result.charAt(0).toUpperCase() + result.slice(1);
-            }
-            return result + punctuation;
-        }
-
-        // Occasionally introduce random character transpositions or deletions (very rare)
-        if (cleanWord.length > 4 && globalRandom.next() < (mistakeChance * 0.3)) {
-            const mistakeType = globalRandom.nextInt(0, 2);
-
-            if (mistakeType === 0) {
-                // Transpose two adjacent characters
-                const idx = globalRandom.nextInt(0, cleanWord.length - 2);
-                const chars = cleanWord.split('');
-                [chars[idx], chars[idx + 1]] = [chars[idx + 1], chars[idx]];
-                return chars.join('') + punctuation;
-            } else if (mistakeType === 1) {
-                // Double a random character
-                const idx = globalRandom.nextInt(0, cleanWord.length - 1);
-                const chars = cleanWord.split('');
-                chars.splice(idx + 1, 0, chars[idx]);
-                return chars.join('') + punctuation;
+        // ONLY introduce the most natural typing errors: transpositions only
+        // These are what humans naturally do when typing quickly
+        if (globalRandom.next() < mistakeChance) {
+            // Only transpose two adjacent characters in the middle (natural typing error)
+            if (cleanWord.length > 5) {
+                const startIdx = 2;
+                const endIdx = cleanWord.length - 3;
+                if (endIdx > startIdx) {
+                    const idx = globalRandom.nextInt(startIdx, endIdx);
+                    const chars = cleanWord.split('');
+                    [chars[idx], chars[idx + 1]] = [chars[idx + 1], chars[idx]];
+                    return chars.join('') + punctuation;
+                }
             }
         }
 
@@ -2290,10 +2612,9 @@ function applyAdvancedHumanization(text: string, intensity: 'light' | 'medium' |
             humanized = rewriteFirstParagraph(humanized);
             humanized = rewriteConcludingParagraph(humanized);
             humanized = addDiscourseMarkers(humanized);
-            // Light spelling mistakes
-            humanized = introduceSpellingMistakes(humanized, 'light');
-            // Light grammatical errors
-            humanized = addGrammaticalErrors(humanized, 'light');
+            // Spelling and grammar errors DISABLED for clean output
+            // humanized = introduceSpellingMistakes(humanized, 'light');
+            // humanized = addGrammaticalErrors(humanized, 'light');
             // Simplify complex terms in introduction and conclusion
             humanized = simplifyIntroductionAndConclusion(humanized);
             break;
@@ -2315,10 +2636,9 @@ function applyAdvancedHumanization(text: string, intensity: 'light' | 'medium' |
             humanized = varySentenceComplexity(humanized, 'medium');
             humanized = addAcademicHedging(humanized);
             humanized = rewriteConcludingParagraph(humanized);
-            // Medium spelling mistakes
-            humanized = introduceSpellingMistakes(humanized, 'medium');
-            // Medium grammatical errors
-            humanized = addGrammaticalErrors(humanized, 'medium');
+            // Spelling and grammar errors DISABLED for clean output
+            // humanized = introduceSpellingMistakes(humanized, 'medium');
+            // humanized = addGrammaticalErrors(humanized, 'medium');
             // Simplify complex terms in introduction and conclusion
             humanized = simplifyIntroductionAndConclusion(humanized);
             break;
@@ -2349,14 +2669,16 @@ function applyAdvancedHumanization(text: string, intensity: 'light' | 'medium' |
             humanized = extremeBurstiness(humanized);  // NEW: Extreme sentence variation
             humanized = addAcademicHedging(humanized);
             humanized = rewriteConcludingParagraph(humanized);
-            // Heavy spelling mistakes
-            humanized = introduceSpellingMistakes(humanized, 'heavy');
-            // Heavy grammatical errors
-            humanized = addGrammaticalErrors(humanized, 'heavy');
+            // Spelling and grammar errors DISABLED for clean output
+            // humanized = introduceSpellingMistakes(humanized, 'heavy');
+            // humanized = addGrammaticalErrors(humanized, 'heavy');
             // Simplify complex terms in introduction and conclusion
             humanized = simplifyIntroductionAndConclusion(humanized);
             break;
     }
+
+    // Remove repetitions BEFORE grammar fixes to clean up duplicates
+    humanized = removeRepetitions(humanized);
 
     // ALWAYS apply grammar and spelling fixes at the end (after all transformations)
     humanized = fixGrammarAndSpelling(humanized);
@@ -2493,20 +2815,36 @@ Rewrite this text to sound more human and natural while keeping it professional:
         );
 
         // ============================================================================
-        // STEP 4: AGGRESSIVE HUMANIZATION - Break AI patterns
+        // STEP 4: AGGRESSIVE HUMANIZATION - Break AI patterns (OPTIMIZED FOR 80%+)
         // ============================================================================
         console.log('Applying aggressive humanization techniques...');
 
-        // Apply aggressive techniques to ALL intensities (increased coverage)
+        // CRITICAL: Add perplexity and burstiness FIRST (key metrics for human detection)
+        finalHumanizedText = addPerplexity(finalHumanizedText);
+        finalHumanizedText = addBurstiness(finalHumanizedText);
+
+        // Apply balanced techniques to ALL intensities for better human scores
         finalHumanizedText = addConversationalTone(finalHumanizedText);
         finalHumanizedText = addMoreContractions(finalHumanizedText);
         finalHumanizedText = breakPerfectStructures(finalHumanizedText);
         finalHumanizedText = varySentenceBeginnings(finalHumanizedText);
         finalHumanizedText = addNaturalRedundancy(finalHumanizedText);
+        finalHumanizedText = varyWordCountInSentences(finalHumanizedText);
+        finalHumanizedText = varyRhythm(finalHumanizedText);
 
-        // Add incomplete thoughts for medium and heavy
-        if (intensity === 'medium' || intensity === 'heavy') {
+        // Add more natural variations
+        finalHumanizedText = addFillerWords(finalHumanizedText);
+        finalHumanizedText = addPersonalTouches(finalHumanizedText);
+        finalHumanizedText = addThinkingPatterns(finalHumanizedText);
+        finalHumanizedText = addFlowVariations(finalHumanizedText);
+        finalHumanizedText = addNaturalImperfections(finalHumanizedText);
+
+        // Add incomplete thoughts for ALL intensities (not just medium/heavy)
+        if (intensity === 'light') {
             finalHumanizedText = addIncompleteThoughts(finalHumanizedText);
+        } else if (intensity === 'medium' || intensity === 'heavy') {
+            finalHumanizedText = addIncompleteThoughts(finalHumanizedText);
+            finalHumanizedText = addInterjections(finalHumanizedText);
         }
 
         console.log('Aggressive humanization complete');
@@ -2524,23 +2862,26 @@ Rewrite this text to sound more human and natural while keeping it professional:
         console.log('Final paraphrasing complete');
 
         // ============================================================================
-        // STEP 6: ADD GRAMMAR AND SPELLING ERRORS - Make it more human-like
+        // STEP 6: GRAMMAR AND SPELLING ERRORS - MODERATE
         // ============================================================================
-        console.log('Adding final grammar and spelling errors...');
+        // Add minimal errors for natural human-like text
+        // Apply to all modes with varying intensity
 
-        // Add spelling mistakes based on intensity
+        console.log('Adding subtle natural errors...');
+
+        // Add minimal spelling mistakes with increased rates for authenticity
         if (intensity === 'light') {
+            // Very minimal for light mode
+            finalHumanizedText = introduceSpellingMistakes(finalHumanizedText, 'light');
+        } else if (intensity === 'medium') {
             finalHumanizedText = introduceSpellingMistakes(finalHumanizedText, 'light');
             finalHumanizedText = addGrammaticalErrors(finalHumanizedText, 'light');
-        } else if (intensity === 'medium') {
+        } else if (intensity === 'heavy') {
             finalHumanizedText = introduceSpellingMistakes(finalHumanizedText, 'medium');
             finalHumanizedText = addGrammaticalErrors(finalHumanizedText, 'medium');
-        } else if (intensity === 'heavy') {
-            finalHumanizedText = introduceSpellingMistakes(finalHumanizedText, 'heavy');
-            finalHumanizedText = addGrammaticalErrors(finalHumanizedText, 'heavy');
         }
 
-        console.log('Grammar and spelling errors added');
+        console.log('Natural errors added');
 
         // Return the humanized text
         return NextResponse.json({
