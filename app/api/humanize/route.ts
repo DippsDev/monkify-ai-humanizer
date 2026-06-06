@@ -2717,6 +2717,9 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // TEMPORARILY DISABLED — Google API billing incident. Remove these two lines to re-enable.
+        return NextResponse.json({ error: 'Service temporarily unavailable. Please try again later.' }, { status: 503 });
+
         let processedText = text;
 
         // ============================================================================
