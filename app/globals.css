@@ -20,9 +20,9 @@
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #f8fafc;
+  color: #171717;
+  font-family: var(--font-fredoka), Arial, Helvetica, sans-serif;
 }
 
 /* Modal Animations */
@@ -85,11 +85,14 @@ input[type="password"]::placeholder {
   }
 }
 
-.animate-marquee {
-  animation: marquee 30s linear infinite;
+.testimonials-marquee {
+  animation: marquee 8s linear infinite;
   will-change: transform;
+  backface-visibility: hidden;
 }
 
-.animate-marquee:hover {
-  animation-play-state: paused;
+@media (max-width: 767px) {
+  .testimonials-marquee {
+    animation-duration: 3s;
+  }
 }

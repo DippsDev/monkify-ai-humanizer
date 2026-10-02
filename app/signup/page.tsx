@@ -167,27 +167,34 @@ export default function SignUpPage() {
     };
 
     return (
-        <div className="min-h-screen bg-amber-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-2xl w-full">
-                {/* Back to Home Link */}
-                <Link
-                    href="/"
-                    className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-8 transition-colors"
-                >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                    Back to home
+        <div className="min-h-screen bg-slate-50">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+                <Link href="/" className="inline-flex items-center mb-8">
+                    <span className="text-lg font-bold text-gray-900" style={{ fontFamily: 'var(--font-bungee)' }}>Monkify</span>
                 </Link>
 
-                {/* Sign Up Card */}
-                <div className="bg-white rounded-2xl shadow-xl p-8 animate-slideUp">
-                    {/* Header */}
-                    <div className="text-center mb-8">
-                        <h1 className="text-4xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'var(--font-bungee)' }}>
+                <div className="grid lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-8 items-start">
+                    <div className="hidden lg:block pt-6">
+                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-600 mb-4">Get started</p>
+                        <h1 className="text-4xl font-bold text-gray-900 leading-tight" style={{ fontFamily: 'var(--font-bungee)' }}>
+                            Humanize your first draft today
+                        </h1>
+                        <ul className="mt-8 space-y-4 text-gray-700">
+                            <li className="flex gap-3"><span className="text-indigo-1000">●</span> Paste an AI draft and rewrite the voice</li>
+                            <li className="flex gap-3"><span className="text-indigo-1000">●</span> Keep the meaning while the rhythm changes</li>
+                            <li className="flex gap-3"><span className="text-indigo-1000">●</span> See which lines still sound mechanical</li>
+                        </ul>
+                    </div>
+
+                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 sm:p-8 animate-slideUp">
+                    <div className="mb-8">
+                        <h1 className="text-3xl font-bold text-gray-900 mb-2 leading-tight lg:hidden" style={{ fontFamily: 'var(--font-bungee)' }}>
                             Join Monkify
                         </h1>
-                        <p className="text-gray-600">Create your account to get started</p>
+                        <h2 className="hidden lg:block text-2xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'var(--font-bungee)' }}>
+                            Create your account
+                        </h2>
+                        <p className="text-gray-600">Sign up to humanize a draft.</p>
                     </div>
 
                     {/* Error/Success Messages */}
@@ -215,7 +222,7 @@ export default function SignUpPage() {
                                 onChange={(e) => setName(e.target.value)}
                                 required
                                 disabled={loading}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-900 font-medium"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-900 font-medium"
                                 placeholder="John Doe"
                             />
                         </div>
@@ -231,7 +238,7 @@ export default function SignUpPage() {
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
                                 disabled={loading}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-900 font-medium"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-900 font-medium"
                                 placeholder="you@example.com"
                             />
                         </div>
@@ -247,7 +254,7 @@ export default function SignUpPage() {
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
                                 disabled={loading}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-900 font-medium"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-900 font-medium"
                                 style={{ WebkitTextSecurity: 'disc' } as React.CSSProperties}
                                 placeholder="••••••••"
                             />
@@ -264,7 +271,7 @@ export default function SignUpPage() {
                                 onChange={(e) => setConfirmPassword(e.target.value)}
                                 required
                                 disabled={loading}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-900 font-medium"
+                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-900 font-medium"
                                 style={{ WebkitTextSecurity: 'disc' } as React.CSSProperties}
                                 placeholder="••••••••"
                             />
@@ -277,15 +284,15 @@ export default function SignUpPage() {
                                 checked={termsAccepted}
                                 onChange={(e) => setTermsAccepted(e.target.checked)}
                                 disabled={loading}
-                                className="w-4 h-4 mt-1 text-orange-600 border-gray-300 rounded focus:ring-orange-500 disabled:cursor-not-allowed"
+                                className="w-4 h-4 mt-1 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 disabled:cursor-not-allowed"
                             />
                             <label htmlFor="terms" className="ml-2 text-sm text-gray-600">
                                 I agree to the{' '}
-                                <a href="#" className="text-orange-600 hover:text-orange-700 transition-colors">
+                                <a href="#" className="text-indigo-600 hover:text-indigo-700 transition-colors">
                                     Terms of Service
                                 </a>
                                 {' '}and{' '}
-                                <a href="#" className="text-orange-600 hover:text-orange-700 transition-colors">
+                                <a href="#" className="text-indigo-600 hover:text-indigo-700 transition-colors">
                                     Privacy Policy
                                 </a>
                             </label>
@@ -294,7 +301,7 @@ export default function SignUpPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-3 px-4 bg-orange-600 text-white font-medium rounded-lg hover:bg-orange-700 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none"
+                            className="w-full py-3 px-4 bg-indigo-600 text-white font-medium rounded-full hover:bg-indigo-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                         >
                             {loading ? 'Creating Account...' : 'Create Account'}
                         </button>
@@ -311,7 +318,7 @@ export default function SignUpPage() {
                     </div>
 
                     {/* Social Sign Up */}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-3">
                         <button
                             type="button"
                             onClick={handleGoogleSignUp}
@@ -344,11 +351,12 @@ export default function SignUpPage() {
                         Already have an account?{' '}
                         <Link
                             href="/?login=true"
-                            className="text-orange-600 hover:text-orange-700 font-medium transition-colors"
+                            className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
                         >
-                            Login
+                            Sign in
                         </Link>
                     </p>
+                </div>
                 </div>
             </div>
         </div>

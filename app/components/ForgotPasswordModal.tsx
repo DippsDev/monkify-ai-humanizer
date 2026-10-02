@@ -53,11 +53,12 @@ export default function ForgotPasswordModal({ isOpen, onClose, onBackToLogin }: 
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fadeIn"
+            className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm animate-fadeIn"
             onClick={onClose}
         >
+            <div className="flex min-h-full items-center justify-center p-4">
             <div
-                className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 m-4 animate-slideUp"
+                className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-5 sm:p-8 animate-slideUp"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Close Button */}
@@ -103,7 +104,7 @@ export default function ForgotPasswordModal({ isOpen, onClose, onBackToLogin }: 
                             onChange={(e) => setEmail(e.target.value)}
                             required
                             disabled={loading}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
                             placeholder="you@example.com"
                         />
                     </div>
@@ -111,7 +112,7 @@ export default function ForgotPasswordModal({ isOpen, onClose, onBackToLogin }: 
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-3 px-4 bg-orange-600 text-white font-medium rounded-lg hover:bg-orange-700 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none"
+                        className="w-full py-3 px-4 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none"
                     >
                         {loading ? 'Sending...' : 'Send Reset Link'}
                     </button>
@@ -122,11 +123,12 @@ export default function ForgotPasswordModal({ isOpen, onClose, onBackToLogin }: 
                     Remember your password?{' '}
                     <button
                         onClick={onBackToLogin}
-                        className="text-orange-600 hover:text-orange-700 font-medium transition-colors"
+                        className="text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
                     >
                         Back to Login
                     </button>
                 </p>
+            </div>
             </div>
         </div>
     );
