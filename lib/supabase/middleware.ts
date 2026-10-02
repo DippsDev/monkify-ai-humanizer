@@ -1,16 +1,15 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { getSupabaseEnv, isSupabaseConfigured } from './config'
 
 export async function updateSession(request: NextRequest) {
     let supabaseResponse = NextResponse.next({
         request,
     })
 
-    // Check if Supabase is configured
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    const { supabaseUrl, supabaseAnonKey } = getSupabaseEnv()
 
-    if (!supabaseUrl || !supabaseAnonKey || supabaseUrl === 'your_supabase_project_url') {
+    if (!isSupabaseConfigured() || !supabaseUrl || !supabaseAnonKey) {
         // Supabase not configured, skip authentication
         return supabaseResponse
     }

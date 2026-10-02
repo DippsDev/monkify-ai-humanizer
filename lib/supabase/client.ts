@@ -1,10 +1,10 @@
 import { createBrowserClient } from '@supabase/ssr'
+import { getSupabaseEnv, isSupabaseConfigured } from './config'
 
 export function createClient() {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    const { supabaseUrl, supabaseAnonKey } = getSupabaseEnv()
 
-    if (!supabaseUrl || !supabaseAnonKey) {
+    if (!isSupabaseConfigured() || !supabaseUrl || !supabaseAnonKey) {
         throw new Error('Supabase URL and Anon Key must be configured in .env.local')
     }
 
