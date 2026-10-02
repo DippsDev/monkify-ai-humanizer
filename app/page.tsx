@@ -14,9 +14,9 @@ const SAMPLE_TEXT =
     "Training at the gym has many benefits for both physical and mental health. One similarity across many sources is that exercise improves strength and endurance. Another common idea claims that physical activity reduces stress and improves mood, especially after regular workouts. A third point often mentioned is that consistent exercise helps build long-term habits, which makes it easier to stay active.";
 
 const DETECTORS = [
-    { name: "GPTZero", src: "/logos/gptzero.svg", className: "h-6 w-auto" },
-    { name: "Originality.ai", src: "/logos/originality.svg", className: "h-5 w-auto" },
-    { name: "Scribbr", src: "/logos/scribbr.svg", className: "h-7 w-auto" },
+    { name: "GPTZero", href: "https://gptzero.me/", src: "/logos/gptzero.svg", className: "h-6 w-auto" },
+    { name: "Originality.ai", href: "https://originality.ai/", src: "/logos/originality.svg", className: "h-5 w-auto" },
+    { name: "Scribbr", href: "https://www.scribbr.com/ai-detector/", src: "/logos/scribbr.svg", className: "h-7 w-auto" },
 ];
 
 export default function Home() {
@@ -343,12 +343,16 @@ export default function Home() {
                         <p className="text-center text-sm font-medium text-gray-600 mb-5">Double-checked with</p>
                         <div className="flex flex-wrap items-center justify-center gap-3">
                             {DETECTORS.map((detector) => (
-                                <span
+                                <a
                                     key={detector.name}
-                                    className="inline-flex h-12 items-center justify-center rounded-full border border-slate-200 bg-white px-5"
+                                    href={detector.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label={`Test this draft with ${detector.name}`}
+                                    className="inline-flex h-12 items-center justify-center rounded-full border border-slate-200 bg-white px-5 transition-colors hover:border-indigo-300"
                                 >
-                                    <img src={detector.src} alt={detector.name} className={detector.className} />
-                                </span>
+                                    <img src={detector.src} alt="" className={detector.className} />
+                                </a>
                             ))}
                         </div>
                     </div>

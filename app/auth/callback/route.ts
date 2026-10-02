@@ -22,8 +22,20 @@ export async function GET(request: Request) {
                 return NextResponse.redirect(`${origin}${next}`)
             }
         }
+
+        const failure = new URLSearchParams({ error: 'server_error' })
+        if (error.message) failure.set('error_description', error.message)
+        return NextResponse.redirect(`${origin}/auth/auth-code-error?${failure}`)
     }
 
-    // return the user to an error page with instructions
-    return NextResponse.redirect(`${origin}/auth/auth-code-error`)
+    const failure = new URLSearchParams()
+    const error = searchParams.get('error')
+    const errorCode = searchParams.get('error_code')
+    const errorDescription = searchParams.get('error_description')
+    if (error) failure.set('error', error)
+    if (errorCode) failure.set('error_code', errorCode)
+    if (errorDescription) failure.set('error_description', errorDescription)
+
+    const query = failure.toString()
+    return NextResponse.redirect(`${origin}/auth/auth-code-error${query ? `?${query}` : ''}`)
 }

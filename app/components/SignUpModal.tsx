@@ -282,11 +282,11 @@ export default function SignUpModal({ isOpen, onClose, onSwitchToLogin }: SignUp
                         />
                         <label htmlFor="terms" className="ml-2 text-sm text-gray-600">
                             I agree to the{' '}
-                            <a href="#" className="text-indigo-600 hover:text-indigo-700 transition-colors">
-                                Terms of Service
+                            <a href="/terms" className="text-indigo-600 hover:text-indigo-700 transition-colors">
+                                Terms of Use
                             </a>
                             {' '}and{' '}
-                            <a href="#" className="text-indigo-600 hover:text-indigo-700 transition-colors">
+                            <a href="/privacy" className="text-indigo-600 hover:text-indigo-700 transition-colors">
                                 Privacy Policy
                             </a>
                         </label>

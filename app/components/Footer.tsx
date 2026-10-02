@@ -20,9 +20,6 @@ export default function Footer() {
                         <h4 className="text-xs font-bold uppercase tracking-wider text-gray-900 mb-4">Tools</h4>
                         <ul className="space-y-3 text-sm text-gray-600">
                             <li><a href="/#humanizer" className="hover:text-indigo-600 transition-colors">AI Humanizer</a></li>
-                            <li><a href="/#features" className="hover:text-indigo-600 transition-colors">AI Detector</a></li>
-                            <li><a href="/#features" className="hover:text-indigo-600 transition-colors">Plagiarism Checker</a></li>
-                            <li><a href="/#features" className="hover:text-indigo-600 transition-colors">AI Chat</a></li>
                         </ul>
                     </div>
 
@@ -40,8 +37,8 @@ export default function Footer() {
                         <h4 className="text-xs font-bold uppercase tracking-wider text-gray-900 mb-4">Support</h4>
                         <ul className="space-y-3 text-sm text-gray-600">
                             <li><a href="/#faq" className="hover:text-indigo-600 transition-colors">FAQ</a></li>
-                            <li><a href="#" className="hover:text-indigo-600 transition-colors">Privacy Policy</a></li>
-                            <li><a href="#" className="hover:text-indigo-600 transition-colors">Terms of Use</a></li>
+                            <li><Link href="/privacy" className="hover:text-indigo-600 transition-colors">Privacy Policy</Link></li>
+                            <li><Link href="/terms" className="hover:text-indigo-600 transition-colors">Terms of Use</Link></li>
                         </ul>
                     </div>
                 </div>
