@@ -53,6 +53,11 @@ function addConversationalTone(text: string): string {
         let sentences = paragraph.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
 
         sentences = sentences.map((sentence, sentIndex) => {
+            // Stacking guard: a sentence that already opens with a starter/
+            // connector must not collect another one.
+            if (/^\s*(Research suggests|Studies indicate|Evidence shows|Analysis reveals|Findings demonstrate|Observations suggest|Data indicates|Experts note|Scholars argue|It's worth noting|One could argue|It appears|It seems|Many believe|Some suggest|Research has shown|Experience tells|History shows|In fact|What's more|Interestingly|Notably|In this context|From this perspective|To put it|In other words|More specifically|For instance|As an example|Particularly|Especially|Importantly|Significantly|Clearly|Indeed|Certainly|Admittedly|That said|Still|Yet|Even so|In practice|In effect|One might|It's interesting|Looking at|Upon closer|From this angle|Taking a step|If we think|Considering this)\b/i.test(sentence)) {
+                return sentence;
+            }
             // Add professional academic starters - OPTIMIZED frequency
             if (globalRandom.next() < 0.22 && sentence.length > 40) {
                 const conversationalStarters = [
@@ -280,14 +285,20 @@ function addMoreContractions(text: string): string {
     return modified;
 }
 
-// Vary sentence beginnings AGGRESSIVELY (AI often starts sentences similarly)
+// Vary sentence beginnings — only when the same opener repeats within the
+// last 3 sentences (otherwise every sentence collects an opener and they
+// stack: "That said, certainly, ..."). Also skips already-opened sentences.
 function varySentenceBeginnings(text: string): string {
     const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
 
     // Track sentence beginnings to avoid repetition
     const beginnings: string[] = [];
 
-    const modified = sentences.map((sentence, index) => {
+    const modified = sentences.map((sentence) => {
+        if (/^\s*(Additionally|Also|Plus|What's more|On top of that|Besides|In addition|Beyond that|Equally important|Similarly|Likewise|At the same time|Simultaneously|Notably|Importantly|Significantly|Interestingly|Indeed|Clearly|Evidently|Obviously|Certainly|Undoubtedly|Surely|Frankly|Honestly|Admittedly|In practice|In effect|In fact|That said|Still|Yet|Even so|Anyway|Basically|Actually|Well|So|Like|Look|See|It's|One might|Research|Studies|Evidence|Analysis|Findings|Observations|Data|Experts|Scholars)\b/i.test(sentence)) {
+            beginnings.push(sentence.split(' ')[0].toLowerCase());
+            return sentence;
+        }
         const firstWord = sentence.split(' ')[0].toLowerCase();
 
         // If we've used this beginning recently, change it MORE AGGRESSIVELY
@@ -365,8 +376,13 @@ function varyWordCountInSentences(text: string): string {
             const words = sentence.split(' ');
             const wordCount = words.length;
 
+            // Stacking guard: never prefix a sentence that already opens with an
+            // opener/transition word — prevents "Significantly, it is worth
+            // noting, significantly, ..." pile-ups.
+            const alreadyOpened = /^(Significantly|Notably|Importantly|Interestingly|Indeed|Clearly|Evidently|Obviously|Certainly|Undoubtedly|Surely|In fact|As it turns out|One might argue|It's worth noting|It is worth noting)\b/i.test(sentence.trim());
+
             // Vary word count based on current length
-            if (globalRandom.next() < 0.4) {
+            if (!alreadyOpened && globalRandom.next() < 0.4) {
                 // Add words to short sentences
                 if (wordCount < 10) {
                     // For the first sentence of the first paragraph (introduction), use appropriate phrases
@@ -411,7 +427,8 @@ function varyWordCountInSentences(text: string): string {
                         }
                     }
                 }
-                // Add variety to medium sentences
+                // Add variety to medium sentences — insert at clause boundary
+                // (after comma) or sentence start, never mid-phrase.
                 else if (wordCount >= 10 && wordCount <= 20) {
                     // Occasionally add qualifier phrases
                     if (globalRandom.next() < 0.3) {
@@ -424,9 +441,12 @@ function varyWordCountInSentences(text: string): string {
                             'surely,',
                         ]);
 
-                        const insertIndex = globalRandom.nextInt(2, Math.min(5, words.length - 1));
-                        words.splice(insertIndex, 0, globalRandom.choice(qualifiers));
-                        sentence = words.join(' ');
+                        const qualifier = globalRandom.choice(qualifiers);
+                        if (sentence.includes(',')) {
+                            sentence = sentence.replace(',', `, ${qualifier}`);
+                        } else {
+                            sentence = `${qualifier.charAt(0).toUpperCase() + qualifier.slice(1)} ${sentence.charAt(0).toLowerCase()}${sentence.slice(1)}`;
+                        }
                     }
                 }
             }
@@ -471,6 +491,10 @@ function addThinkingPatterns(text: string): string {
         const sentences = paragraph.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
 
         const modified = sentences.map((sentence, sentIndex) => {
+            // Skip sentences that already open with an opener (stacking guard)
+            if (/^\s*(It's interesting|What's particularly|One might|It's worth|Looking at|Upon closer|From this|Taking a|If we|Considering|Notably|Importantly|Significantly|Interestingly|Indeed|Clearly)\b/i.test(sentence)) {
+                return sentence;
+            }
             // Add thinking patterns occasionally - INCREASED
             if (globalRandom.next() < 0.12 && sentence.length > 40 && sentIndex > 0) {
                 const thinkingPatterns = [
@@ -497,21 +521,27 @@ function addThinkingPatterns(text: string): string {
     return modifiedParagraphs.join('\n\n');
 }
 
-// Add more natural sentence flow variations
+// Flow variations — RARE rhetorical questions only (0.08 → 0.03).
+// The old rate inserted "Why is this important?" into formal academic prose,
+// which reads as broken. Now max one question per text, never stacked.
 function addFlowVariations(text: string): string {
     const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
 
+    let inserted = false;
     const modified = sentences.map((sentence, index) => {
-        // Occasionally start with a question-like structure - INCREASED
-        if (globalRandom.next() < 0.08 && sentence.length > 50 && index > 0) {
+        if (inserted || index === 0) return sentence;
+        // Skip sentences that already open with an opener/question
+        if (/^\s*(Why is|What does|How does|Why does|What's|Notably|Importantly|Significantly|Interestingly|Indeed|Clearly|In fact|That said|Still|Yet|One might|It's)\b/i.test(sentence)) {
+            return sentence;
+        }
+        if (globalRandom.next() < 0.03 && sentence.length > 60) {
             const questionStarters = [
                 "Why is this important? ",
                 "What does this mean? ",
-                "How does this work? ",
                 "Why does this matter? ",
-                "What's the significance? ",
             ];
             const starter = globalRandom.choice(questionStarters);
+            inserted = true;
             return starter + sentence;
         }
         return sentence;
@@ -551,45 +581,41 @@ function addPerplexity(text: string): string {
 }
 
 // Add burstiness - vary sentence length dramatically (KEY for 80%+)
+// FIXED: no more random one-word fragments ("After all.", "Yet.", "So.") —
+// those read as errors, not style. Now only splits long sentences at real
+// clause boundaries (commas/conjunctions) and never orphans <4 words.
 function addBurstiness(text: string): string {
     const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
 
     const modified: string[] = [];
 
     for (let i = 0; i < sentences.length; i++) {
-        let sentence = sentences[i];
+        const sentence = sentences[i];
         const wordCount = sentence.split(' ').length;
 
-        // Create dramatic length variations
+        // Split long sentences at a clause boundary (comma or conjunction)
         if (wordCount > 20 && globalRandom.next() < 0.25) {
-            // Split long sentence into short burst
-            const words = sentence.split(' ');
-            const splitPoint = globalRandom.nextInt(5, 10);
-
-            if (splitPoint < words.length - 5) {
-                const firstPart = words.slice(0, splitPoint).join(' ');
-                const secondPart = words.slice(splitPoint).join(' ');
-
-                // Create a very short sentence followed by longer one
+            const commaIdx = sentence.indexOf(',');
+            if (commaIdx > 20 && commaIdx < sentence.length - 20) {
+                const firstPart = sentence.slice(0, commaIdx).trim();
+                let secondPart = sentence.slice(commaIdx + 1).trim();
+                secondPart = secondPart.charAt(0).toUpperCase() + secondPart.slice(1);
                 modified.push(firstPart + '.');
-                modified.push(secondPart.charAt(0).toUpperCase() + secondPart.slice(1));
+                modified.push(secondPart);
                 continue;
             }
-        }
-
-        // Occasionally create very short emphatic sentences
-        if (wordCount > 15 && globalRandom.next() < 0.10 && i < sentences.length - 1) {
-            const shortPhrases = [
-                'Indeed.',
-                'Precisely.',
-                'Exactly.',
-                'True.',
-                'Right.',
-                'Absolutely.',
-            ];
-            modified.push(sentence);
-            modified.push(globalRandom.choice(shortPhrases));
-            continue;
+            const conjMatch = sentence.match(/\s+(and|but|while|whereas)\s+/i);
+            if (conjMatch && (conjMatch.index ?? 0) > 20) {
+                const at = conjMatch.index ?? 0;
+                const firstPart = sentence.slice(0, at).trim().replace(/[,;:]$/, '');
+                let secondPart = sentence.slice(at + conjMatch[0].length).trim();
+                secondPart = secondPart.charAt(0).toUpperCase() + secondPart.slice(1);
+                if (firstPart.split(' ').length >= 4 && secondPart.split(' ').length >= 4) {
+                    modified.push(firstPart + '.');
+                    modified.push(secondPart);
+                    continue;
+                }
+            }
         }
 
         modified.push(sentence);
@@ -598,19 +624,12 @@ function addBurstiness(text: string): string {
     return modified.join(' ');
 }
 
-// Introduce varied punctuation patterns
+// Introduce varied punctuation patterns — SAFE subset only.
+// FIXED: appending a bare '—' to a sentence ("...evidence.— ...") produced
+// mojibake ("inâ—") and broken punctuation. That transform is removed; only
+// the safe semicolon variation remains.
 function varyPunctuation(text: string): string {
     let modified = text;
-
-    // Replace some periods with em dashes for emphasis (reduced frequency)
-    const sentences = modified.split('. ');
-    if (sentences.length > 4) {
-        const randomIndex = globalRandom.nextInt(0, sentences.length - 1);
-        if (globalRandom.next() < 0.2) { // Only 20% chance
-            sentences[randomIndex] = sentences[randomIndex] + '—';
-            modified = sentences.join('. ');
-        }
-    }
 
     // Add occasional semicolons for professional flow
     modified = modified.replace(/\. (However|Nevertheless|Moreover|Furthermore),/g, (match) => {
@@ -620,64 +639,43 @@ function varyPunctuation(text: string): string {
     return modified;
 }
 
-// Add natural filler words and phrases
+// Add natural filler words and phrases — ACADEMIC-SAFE subset.
+// Casual fillers ("so to speak", "if you will", "as it were", "more or less",
+// "in a sense", "needless to say") made formal text sound broken, so they
+// were removed. Mid-sentence inserts only happen after a comma now.
 function addFillerWords(text: string): string {
-    const fillers = globalRandom.shuffle([
+    const fillers = [
         'notably',
         'importantly',
-        'it should be noted',
         'in particular',
         'specifically',
         'essentially',
         'fundamentally',
         'primarily',
-        'generally speaking',
         'in practice',
         'arguably',
         'undoubtedly',
         'certainly',
         'admittedly',
-        'frankly',
-        'honestly',
-        'needless to say',
-        'it goes without saying',
         'for the most part',
         'in essence',
-        'by and large',
-        'to be sure',
-        'at any rate',
-        'all things considered',
-        'so to speak',
-        'in a sense',
-        'more or less',
-        'if you will',
-        'as it were',
-        'to put it simply',
-        'to put it another way',
-        'without question',
-        'without doubt',
         'to some extent',
-        'in a manner of speaking',
         'after all',
         'in any event',
         'in fact',
-        'as a matter of fact',
-        'it is clear that',
-        'it is evident that',
-        'suffice it to say',
-        'let us consider',
         'one might argue',
-        'it is worth noting',
-        'the fact of the matter is',
-        'as one can see',
         'plainly',
         'obviously',
         'clearly',
         'evidently'
-    ]);
+    ];
 
     const sentences = text.split('. ');
     const modifiedSentences = sentences.map((sentence) => {
+        // Skip sentences that already open with a filler/opener (stacking guard)
+        if (/^\s*(Notably|Importantly|Significantly|Interestingly|Indeed|Clearly|Evidently|Obviously|Certainly|Undoubtedly|Surely|Frankly|Honestly|Admittedly|Arguably|Essentially|Fundamentally|Primarily|Specifically|In particular|In practice|In fact|In essence|After all|All things considered|At any rate|To be sure|By and large|It's worth noting|It is worth noting|One might argue|In conclusion|Moreover|Furthermore|Additionally|Therefore|However|Nevertheless|Consequently|Thus|Hence)\b/i.test(sentence)) {
+            return sentence;
+        }
         // Add filler words to some sentences (25% chance - optimized for 80%+)
         if (globalRandom.next() < 0.25 && sentence.length > 30) {
             const filler = globalRandom.choice(fillers);
@@ -743,7 +741,9 @@ function addPersonalTouches(text: string): string {
     return modified;
 }
 
-// Introduce natural sentence rhythm variations
+// Introduce natural sentence rhythm variations — CONSERVATIVE.
+// FIXED: splitting on ' and ' produced fragments ("Also, empirical evidence.")
+// Now only splits when both halves stand alone (4+ words each).
 function varyRhythm(text: string): string {
     const sentences = text.split('. ');
     const modifiedSentences = sentences.map((sentence) => {
@@ -751,7 +751,11 @@ function varyRhythm(text: string): string {
         if (sentence.length > 100 && sentence.includes(' and ')) {
             const parts = sentence.split(' and ');
             if (parts.length === 2 && globalRandom.next() < 0.4) {
-                return `${parts[0]}. Additionally, ${parts[1]}`;
+                const left = parts[0].trim();
+                const right = parts[1].trim();
+                if (left.split(/\s+/).length >= 4 && right.split(/\s+/).length >= 4) {
+                    return `${left}. Additionally, ${right}`;
+                }
             }
         }
         return sentence;
@@ -761,8 +765,11 @@ function varyRhythm(text: string): string {
 }
 
 // Add contextual interjections (but avoid first paragraph to preserve introduction)
+// FIXED: no longer lowercases the whole sentence (was producing "notably,
+// machine learning..." with broken capitalization); only lowercases the first
+// letter. Skips sentences that already open with an opener.
 function addInterjections(text: string): string {
-    const interjections = globalRandom.shuffle(['Indeed', 'Notably', 'Interestingly', 'Clearly', 'Evidently']);
+    const interjections = ['Indeed', 'Notably', 'Interestingly', 'Clearly', 'Evidently'];
     const paragraphs = text.split('\n\n').filter(p => p.trim().length > 0);
 
     // Process each paragraph separately
@@ -776,8 +783,11 @@ function addInterjections(text: string): string {
 
         if (sentences.length > 2 && globalRandom.next() < 0.3) {
             const randomIndex = globalRandom.nextInt(0, sentences.length - 1);
-            const interjection = globalRandom.choice(interjections);
-            sentences[randomIndex] = `${interjection}, ${sentences[randomIndex].toLowerCase()}`;
+            const target = sentences[randomIndex];
+            if (!/^\s*(Indeed|Notably|Interestingly|Clearly|Evidently|Importantly|Significantly|Obviously|Certainly|In fact|In practice|That said|Still|Yet|One might|It's)\b/i.test(target)) {
+                const interjection = globalRandom.choice(interjections);
+                sentences[randomIndex] = `${interjection}, ${target.charAt(0).toLowerCase()}${target.slice(1)}`;
+            }
         }
 
         return sentences.join('. ');
@@ -1233,6 +1243,92 @@ function fixGrammarAndSpelling(text: string): string {
     return corrected;
 }
 
+// Protect spans we must never rewrite: URLs, emails, numbers, citations,
+// quoted text. Returns text with placeholders + restore fn.
+function protectSpans(text: string): { text: string; restore: (s: string) => string } {
+    const slots: string[] = [];
+    const stash = (s: string) => {
+        slots.push(s);
+        return `__PROT${slots.length - 1}__`;
+    };
+    let out = text;
+    out = out.replace(/https?:\/\/[^\s)]+/gi, (m) => stash(m));
+    out = out.replace(/[\w.+-]+@[\w-]+\.[\w.]+/g, (m) => stash(m));
+    out = out.replace(/\([A-Z][A-Za-z-]+,\s*\d{4}[a-z]?\)/g, (m) => stash(m));
+    out = out.replace(/\[\d+(?:[,-]\d+)*\]/g, (m) => stash(m));
+    out = out.replace(/\b(Figure|Table|Equation|Section|Chapter)\s+\d+(\.\d+)*/gi, (m) => stash(m));
+    out = out.replace(/"[^"]{2,200}"/g, (m) => stash(m));
+    return {
+        text: out,
+        restore: (s: string) => s.replace(/__PROT(\d+)__/g, (_m, i) => slots[Number(i)] ?? _m),
+    };
+}
+
+// Split long docs into sentence-aware chunks so API calls + transforms
+// don't blow token limits or time out. Splits on sentence boundaries.
+function chunkBySentences(text: string, maxChars = 2500): string[] {
+    if (text.length <= maxChars) return [text];
+    const sentences = text.match(/[^.!?]+[.!?]+["']?\s*|\S[^.!?]*$/g) ?? [text];
+    const chunks: string[] = [];
+    let current = '';
+    for (const s of sentences) {
+        if ((current + s).length > maxChars && current.trim()) {
+            chunks.push(current.trim());
+            current = s;
+        } else {
+            current += s;
+        }
+    }
+    if (current.trim()) chunks.push(current.trim());
+    return chunks.length ? chunks : [text];
+}
+
+// Strip the most overused AI-tell phrases (detectors key on these).
+// Replaces with plainer wording or drops them.
+function stripAITells(text: string): string {
+    let out = text;
+    const tells: Array<[RegExp, string]> = [
+        [/\bit is important to note that\s+/gi, ''],
+        [/\bit is worth noting that\s+/gi, ''],
+        [/\bin today's fast-paced world,?\s*/gi, ''],
+        [/\bin conclusion,?\s*/gi, ''],
+        [/\bin summary,?\s*/gi, ''],
+        [/\bmoreover,?\s*/gi, ''],
+        [/\bfurthermore,?\s*/gi, ''],
+        [/\badditionally,?\s*/gi, ''],
+        [/\bdelve into/gi, 'explore'],
+        [/\btapestry of/gi, 'range of'],
+        [/\blandmark study/gi, 'study'],
+        [/\bgroundbreaking/gi, 'notable'],
+        [/\bcutting-edge/gi, 'recent'],
+        [/\bleverage(ing|s|d)?\b/gi, 'use$1'],
+        [/\butilize[sd]?\b/gi, 'use'],
+        [/\ba testament to\b/gi, 'evidence of'],
+        [/\bin the realm of\b/gi, 'in'],
+        [/\bboasts\b/gi, 'has'],
+        [/\bvibrant\b/gi, 'active'],
+        [/\bpivotal\b/gi, 'key'],
+        [/\bit should be noted that\s+/gi, ''],
+        [/\bdue to the fact that\b/gi, 'because'],
+        [/\bin order to\b/gi, 'to'],
+    ];
+    for (const [pattern, replacement] of tells) {
+        out = out.replace(pattern, replacement);
+    }
+    out = out.replace(/[ \t]{2,}/g, ' ');
+    out = out.replace(/(^|[.!?]\s+)([a-z])/g, (_m, pre: string, ch: string) => pre + ch.toUpperCase());
+    return out;
+}
+
+// Safety net: guarantee output length stays within sane bounds of input.
+// If transforms deleted/duplicated too much, fall back toward the input.
+function enforceLengthGuardrail(input: string, output: string): string {
+    const ratio = output.length / Math.max(1, input.length);
+    if (ratio >= 0.7 && ratio <= 1.6) return output;
+    console.warn(`Length guardrail tripped (ratio ${ratio.toFixed(2)}), returning lightly-processed input`);
+    return input;
+}
+
 // Enhanced paraphrase sentences while maintaining academic tone and meaning
 function paraphraseSentences(text: string, aggressiveness: 'medium' | 'heavy'): string {
     const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
@@ -1310,7 +1406,7 @@ function paraphraseSentences(text: string, aggressiveness: 'medium' | 'heavy'): 
         'open': ['unlock', 'unseal', 'uncover', 'reveal', 'expose', 'initiate', 'commence'],
         'walk': ['stroll', 'amble', 'stride', 'pace', 'march', 'trek', 'wander'],
         'win': ['triumph', 'prevail', 'succeed', 'conquer', 'overcome', 'achieve', 'attain'],
-        'offer': ['provide', 'present', 'propose', 'suggest', 'tender', 'extend', 'submit'],
+        'offer': ['provide', 'present', 'propose', 'suggest', 'extend', 'put forward'],
         'remember': ['recall', 'recollect', 'reminisce', 'retain', 'bear in mind', 'keep in mind', 'think back'],
         'love': ['adore', 'cherish', 'treasure', 'value', 'appreciate', 'prize', 'hold dear'],
         'consider': ['contemplate', 'ponder', 'reflect', 'deliberate', 'weigh', 'examine', 'evaluate'],
@@ -1338,15 +1434,32 @@ function paraphraseSentences(text: string, aggressiveness: 'medium' | 'heavy'): 
         'pull': ['drag', 'tug', 'haul', 'draw', 'yank', 'tow', 'extract'],
     };
 
+    // Domain / compound-term blocklist: swapping these changes meaning
+    // ("artificial intelligence" -> "fake intelligence" is wrong).
+    const protectedTerms = /\b(artificial intelligence|machine learning|deep learning|neural network|natural language|climate change|higher education|peer review|case study|data set)\b/i;
+
     const paraphrased = sentences.map(sentence => {
         let modified = sentence;
 
+        // Skip sentences containing protected compound terms entirely —
+        // synonym-swapping inside them corrupts meaning.
+        if (protectedTerms.test(sentence)) return sentence;
+
         // Apply synonym replacement based on aggressiveness
-        const replacementChance = aggressiveness === 'heavy' ? 0.7 : 0.5;
+        // LOWERED: 0.7/0.5 replaced far too many words per sentence, producing
+        // garbled output. 0.3/0.2 keeps voice natural.
+        const replacementChance = aggressiveness === 'heavy' ? 0.3 : 0.2;
 
         Object.keys(synonymMap).forEach(word => {
             const regex = new RegExp(`\\b${word}\\b`, 'gi');
-            modified = modified.replace(regex, (match) => {
+            modified = modified.replace(regex, (match, offset: number, full: string) => {
+                // Never swap inside protected placeholders or multi-word terms
+                if (/__PROT\d+__/.test(full.slice(Math.max(0, offset - 10), offset + match.length + 10))) return match;
+                // Never swap capitalized mid-sentence words (likely proper nouns / terms of art)
+                if (offset > 0 && match[0] === match[0].toUpperCase() && /[a-z]/.test(match.slice(1)) && full[offset - 1] !== '.' && /\S/.test(full[offset - 1] || '')) {
+                    const prevChar = full[offset - 1];
+                    if (prevChar !== ' ' || /^[A-Z]/.test(full.slice(offset, offset + 12))) return match;
+                }
                 if (globalRandom.next() < replacementChance) {
                     const synonyms = globalRandom.shuffle(synonymMap[word.toLowerCase()]);
                     const replacement = globalRandom.choice(synonyms);
@@ -1516,7 +1629,7 @@ function simplifyIntroductionAndConclusion(text: string): string {
         'arsenal': ['collection', 'storehouse', 'supply'],
         'articulate': ['speak', 'express', 'voice'],
         'artifice': ['trick', 'deception', 'cunning'],
-        'artificial': ['fake', 'human-made', 'not real'],
+        'artificial': ['synthetic', 'machine-generated', 'automated'],
         'artisan': ['craftsperson', 'maker', 'skilled worker'],
         'ascend': ['climb', 'go up', 'rise'],
         'ascendancy': ['dominance', 'control', 'power'],
@@ -1922,48 +2035,57 @@ function addAcademicTransitions(text: string): string {
 }
 
 // Vary sentence complexity and structure
+// FIXED: previous version merged sentence[i] with sentence[i+1] but still emitted
+// sentence[i+1] on the next iteration → duplicated content. Now consumes pairs.
 function varySentenceComplexity(text: string, aggressiveness: 'medium' | 'heavy'): string {
     const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
-    const modificationChance = aggressiveness === 'heavy' ? 0.5 : 0.3;
+    const modificationChance = aggressiveness === 'heavy' ? 0.35 : 0.22;
 
-    const modified = sentences.map((sentence, index) => {
-        if (globalRandom.next() > modificationChance) return sentence;
-
-        // Combine short consecutive sentences
-        if (sentence.length < 60 && index < sentences.length - 1 && sentences[index + 1].length < 60) {
-            const connectors = globalRandom.shuffle(['and', 'while', 'as', 'whereas', 'though']);
-            const connector = globalRandom.choice(connectors);
-            return `${sentence.replace(/[.!?]$/, '')}, ${connector} ${sentences[index + 1].charAt(0).toLowerCase()}${sentences[index + 1].slice(1)}`;
+    const out: string[] = [];
+    for (let index = 0; index < sentences.length; index++) {
+        const sentence = sentences[index];
+        if (globalRandom.next() > modificationChance) {
+            out.push(sentence);
+            continue;
         }
 
-        // Split long sentences
+        // Combine two short consecutive sentences (consume both, no duplication)
+        const next = sentences[index + 1];
+        if (sentence.length < 60 && next && next.length < 60 && globalRandom.next() < 0.5) {
+            const connectors = ['and', 'while', 'as', 'whereas', 'though'];
+            const connector = globalRandom.choice(connectors);
+            out.push(
+                `${sentence.replace(/[.!?]$/, '')}, ${connector} ` +
+                `${next.charAt(0).toLowerCase()}${next.slice(1)}`
+            );
+            index++; // consume next sentence
+            continue;
+        }
+
+        // Split long sentences (no content loss)
         if (sentence.length > 120 && sentence.includes(' and ')) {
             const parts = sentence.split(' and ');
             if (parts.length === 2) {
-                return `${parts[0].trim()}. Additionally, ${parts[1].trim()}`;
+                out.push(`${parts[0].trim()}. Additionally, ${parts[1].trim()}`);
+                continue;
             }
         }
 
-        return sentence;
-    });
+        out.push(sentence);
+    }
 
-    // Remove duplicates from combining
-    const unique = modified.filter((sentence, index) => {
-        if (index === 0) return true;
-        return !modified[index - 1].includes(sentence.slice(0, 20));
-    });
-
-    return unique.join(' ');
+    return out.join(' ');
 }
 
 // Add scholarly hedging and qualifiers
+// FIXED: mid-sentence comma insertion ("use vast certainly. Notably, amounts")
+// sounded broken. Qualifiers now go at clause boundaries only.
 function addAcademicHedging(text: string): string {
     const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
 
     const hedges = [
-        { pattern: /\b(is|are|was|were)\s+(\w+)\b/i, replacement: 'appears to be $2', chance: 0.15 },
         { pattern: /\b(shows|demonstrates|proves)\b/i, replacement: 'suggests', chance: 0.2 },
-        { pattern: /\b(always|never|all|none)\b/i, replacement: 'generally', chance: 0.25 },
+        { pattern: /\b(always|never)\b/i, replacement: 'generally', chance: 0.25 },
         { pattern: /\b(will|must)\b/i, replacement: 'may', chance: 0.15 },
     ];
 
@@ -1987,10 +2109,18 @@ function addAcademicHedging(text: string): string {
 
         if (globalRandom.next() < 0.15 && modified.length > 40) {
             const qualifier = globalRandom.choice(qualifiers);
-            const words = modified.split(' ');
-            const insertPoint = Math.floor(words.length / 2);
-            words.splice(insertPoint, 0, qualifier + ',');
-            modified = words.join(' ');
+            // Insert at a clause boundary (after first comma) or sentence start —
+            // never in the middle of a noun phrase.
+            if (modified.includes(',')) {
+                modified = modified.replace(',', `, ${qualifier},`);
+            } else {
+                const words = modified.split(' ');
+                if (words.length > 6) {
+                    const insertPoint = globalRandom.nextInt(1, 3);
+                    words.splice(insertPoint, 0, qualifier + ',');
+                    modified = words.join(' ');
+                }
+            }
         }
 
         return modified;
@@ -1999,34 +2129,44 @@ function addAcademicHedging(text: string): string {
     return hedged.join(' ');
 }
 
-// Create frequent sentence breaks to split long sentences into shorter ones
+// Create frequent sentence breaks — CONSERVATIVE rewrite.
+// FIXED: the old fallback pattern (", " → ". ") fired on ANY comma with
+// heavy's 0.6 chance, orphaning fragments ("In practice.", "Significantly.",
+// "data privacy,. The erosion..."). Now: only breaks at relative-clause or
+// conjunction boundaries, never leaves a fragment under 4 words, and heavy
+// chance lowered 0.6 → 0.35.
 function createFrequentSentenceBreaks(text: string, breakIntensity: 'light' | 'medium' | 'heavy' = 'medium'): string {
     const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
 
     const breakChance = {
-        light: 0.2,
-        medium: 0.4,
-        heavy: 0.6
+        light: 0.15,
+        medium: 0.25,
+        heavy: 0.35
     }[breakIntensity];
 
     const modified = sentences.map(sentence => {
         // Don't break very short sentences
-        if (sentence.length < 40) return sentence;
+        if (sentence.length < 80) return sentence;
 
         if (globalRandom.next() < breakChance) {
-            // Look for natural breaking points
+            // Look for natural breaking points (ordered: safest first)
             const breakPatterns = [
                 { pattern: /,\s+(?=which|that|who|where|when|why|how)/i, separator: '. ' },
+                { pattern: /;\s+/, separator: '. ' },
                 { pattern: /\s+and\s+/, separator: '. And ' },
                 { pattern: /\s+but\s+/, separator: '. But ' },
-                { pattern: /;\s+/, separator: '. ' },
-                { pattern: /,\s+/, separator: '. ' },
             ];
 
             for (const { pattern, separator } of breakPatterns) {
-                if (pattern.test(sentence)) {
-                    return sentence.replace(pattern, separator);
-                }
+                if (!pattern.test(sentence)) continue;
+                const candidate = sentence.replace(pattern, separator);
+                // Validate: every resulting sentence must stand alone (4+ words,
+                // starts uppercase, ends with punctuation)
+                const parts = candidate.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
+                const valid = parts.length === 2 && parts.every(p =>
+                    p.trim().split(/\s+/).length >= 4 && /^[A-Z]/.test(p.trim())
+                );
+                if (valid) return candidate;
             }
         }
 
@@ -2082,30 +2222,33 @@ function introduceSpellingMistakes(text: string, intensity: 'light' | 'medium' |
 }
 
 // Aggressive vocabulary shift for extreme word variation (HIGH PERPLEXITY)
+// FIXED: no longer touches function words like "the" (was destroying grammar),
+// uses safer content-word swaps at a moderate rate with case preservation.
 function aggressiveVocabularyShift(text: string): string {
     const extremeSynonyms: { [key: string]: string[] } = {
-        'the': ['a', 'this', 'that', 'such'],
-        'very': ['exceptionally', 'remarkably', 'particularly', 'extraordinarily', 'tremendously'],
-        'good': ['commendable', 'praiseworthy', 'exemplary', 'admirable', 'outstanding'],
-        'bad': ['deplorable', 'lamentable', 'regrettable', 'unfortunate', 'unfavorable'],
-        'thing': ['matter', 'aspect', 'element', 'component', 'facet', 'feature'],
-        'way': ['manner', 'approach', 'methodology', 'technique', 'method', 'strategy'],
-        'place': ['location', 'venue', 'setting', 'site', 'context'],
-        'time': ['period', 'epoch', 'moment', 'interval', 'instance'],
-        'people': ['individuals', 'persons', 'entities', 'parties', 'stakeholders'],
-        'make': ['construct', 'fabricate', 'manufacture', 'assemble', 'formulate'],
-        'have': ['possess', 'retain', 'maintain', 'hold', 'harbor'],
-        'say': ['articulate', 'express', 'convey', 'assert', 'proclaim'],
+        'very': ['exceptionally', 'remarkably', 'particularly', 'notably', 'tremendously'],
+        'good': ['commendable', 'strong', 'solid', 'valuable', 'effective'],
+        'bad': ['poor', 'weak', 'problematic', 'unfavorable', 'limited'],
+        'thing': ['aspect', 'element', 'factor', 'feature', 'consideration'],
+        'way': ['approach', 'method', 'strategy', 'avenue', 'path'],
+        'place': ['setting', 'context', 'environment', 'arena'],
+        'time': ['period', 'moment', 'juncture', 'phase'],
+        'people': ['individuals', 'stakeholders', 'participants', 'scholars'],
+        'make': ['create', 'produce', 'generate', 'shape', 'foster'],
+        'have': ['possess', 'retain', 'encompass', 'include'],
+        'say': ['state', 'note', 'observe', 'contend', 'argue'],
+        'use': ['employ', 'apply', 'leverage', 'draw on', 'utilize'],
+        'show': ['demonstrate', 'illustrate', 'reveal', 'underscore', 'highlight'],
+        'help': ['support', 'facilitate', 'strengthen', 'advance'],
     };
 
     let modified = text;
     Object.entries(extremeSynonyms).forEach(([word, synonyms]) => {
         const regex = new RegExp(`\\b${word}\\b`, 'gi');
         modified = modified.replace(regex, (match) => {
-            // 65% chance to replace with synonym
-            if (globalRandom.next() < 0.65) {
-                const synonymList = globalRandom.shuffle(synonyms);
-                const replacement = globalRandom.choice(synonymList);
+            // 35% chance to replace (was 65% — far too aggressive)
+            if (globalRandom.next() < 0.35) {
+                const replacement = globalRandom.choice(synonyms);
                 // Preserve capitalization
                 if (match[0] === match[0].toUpperCase()) {
                     return replacement.charAt(0).toUpperCase() + replacement.slice(1);
@@ -2120,45 +2263,62 @@ function aggressiveVocabularyShift(text: string): string {
 }
 
 // Extreme burstiness for high variation between sentences (HIGH BURSTINESS)
+// FIXED: previous version DELETED content (truncated sentences) and DUPLICATED
+// sentences (appended sentence to itself). This version only reorders / splits
+// without losing or duplicating meaning.
 function extremeBurstiness(text: string): string {
     const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
 
-    const modified = sentences.map((sentence, index) => {
-        const modulo = index % 3;
+    const modified: string[] = [];
+    for (let index = 0; index < sentences.length; index++) {
+        const sentence = sentences[index];
+        const modulo = index % 4;
 
         if (modulo === 0) {
-            // Super short sentence: truncate to 5-10 words
+            // Occasionally split a long sentence at a clause boundary
+            // (comma/conjunction) — never mid-phrase, never <4-word orphans.
             const words = sentence.split(' ');
-            if (words.length > 10) {
-                const truncated = words.slice(0, globalRandom.nextInt(5, 10)).join(' ');
-                return truncated.replace(/[,;].*$/, '') + '.'; // Remove trailing clauses
+            if (words.length > 22 && globalRandom.next() < 0.4) {
+                const commaAt = sentence.indexOf(',', 20);
+                if (commaAt > 0 && commaAt < sentence.length - 20) {
+                    const firstPart = sentence.slice(0, commaAt).trim();
+                    let secondPart = sentence.slice(commaAt + 1).trim();
+                    secondPart = secondPart.charAt(0).toUpperCase() + secondPart.slice(1);
+                    if (firstPart.split(' ').length >= 4 && secondPart.split(' ').length >= 4) {
+                        modified.push(firstPart + '.');
+                        modified.push(secondPart);
+                        continue;
+                    }
+                }
             }
-            return sentence;
+            modified.push(sentence);
         } else if (modulo === 1) {
-            // Super long: add expansive clauses
-            const expansions = globalRandom.shuffle([
-                ', which is to say,',
-                ', in other words,',
-                ', that is to say,',
-                ', or more precisely,',
-            ]);
-            const expansion = globalRandom.choice(expansions);
-            return sentence.replace(/\./, expansion) + ' ' + sentence.toLowerCase();
-        } else {
-            // Add hesitation/natural speech patterns
-            const hesitations = globalRandom.shuffle([
-                'Well, ',
-                'You see, ',
-                'Actually, ',
-                'To be honest, ',
-                'In fact, ',
-            ]);
-            if (globalRandom.next() < 0.6) {
-                return hesitations[0] + sentence.charAt(0).toLowerCase() + sentence.slice(1);
+            // Occasionally merge with next short sentence for a longer rhythm
+            const next = sentences[index + 1];
+            if (next && sentence.length < 80 && next.length < 80 && globalRandom.next() < 0.35) {
+                const connectors = [' and ', ', while ', ', whereas ', ' — ', '; '];
+                const connector = globalRandom.choice(connectors);
+                const merged = sentence.replace(/[.!?]$/, '') + connector +
+                    next.charAt(0).toLowerCase() + next.slice(1);
+                modified.push(merged);
+                index++; // consume next
+            } else {
+                modified.push(sentence);
             }
-            return sentence;
+        } else if (modulo === 2) {
+            // Add a natural opener occasionally (skip already-opened sentences)
+            const openers = ['Notably, ', 'In practice, ', 'Crucially, ', 'In effect, '];
+            if (sentence.length > 40 && globalRandom.next() < 0.3 &&
+                !/^\s*(Well|You see|Actually|Notably|In practice|Importantly|Significantly|Interestingly|Indeed|Clearly|Evidently|Obviously|Certainly|In fact|That said|Still|Yet|One might|It's)\b/i.test(sentence)) {
+                const opener = globalRandom.choice(openers);
+                modified.push(opener + sentence.charAt(0).toLowerCase() + sentence.slice(1));
+            } else {
+                modified.push(sentence);
+            }
+        } else {
+            modified.push(sentence);
         }
-    });
+    }
 
     return modified.join(' ');
 }
@@ -2166,10 +2326,12 @@ function extremeBurstiness(text: string): string {
 // Back-translation function to naturally paraphrase text
 async function backTranslate(text: string, intensity: 'light' | 'medium' | 'heavy'): Promise<string> {
     // Different translation chains based on intensity
+    // NOTE: kept short on purpose — each hop costs latency + risks meaning drift.
+    // Heavy uses 3 hops max; text is chunked so long docs still work.
     const translationChains = {
         light: ['ja'], // English -> Japanese -> English
-        medium: ['ja', 'es', 'de'], // English -> Japanese -> Spanish -> German -> English
-        heavy: ['ja', 'de', 'fr', 'pt', 'it', 'ru', 'ko'], // English -> Japanese -> German -> French -> Portuguese -> Italian -> Russian -> Korean -> English
+        medium: ['ja', 'es'], // English -> Japanese -> Spanish -> English
+        heavy: ['ja', 'fr', 'de'], // English -> Japanese -> French -> German -> English
     };
 
     const languages = translationChains[intensity];
@@ -2391,30 +2553,33 @@ async function translateText(text: string, targetLang: string): Promise<string |
     }
 }
 
-// Add discourse markers for natural flow
+// Discourse markers — ACADEMIC-SAFE set only. The old casual set
+// ("Like,", "You know,", "Look,", "See,") made academic text sound broken,
+// so casual markers were removed. Rate lowered 0.15 → 0.10.
 function addDiscourseMarkers(text: string): string {
     const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
 
     const discourseMarkers = {
-        start: ['I mean,', 'You know,', 'Like,', 'Well,', 'Actually,', 'So,', 'Basically,', 'Honestly,', 'Frankly,', 'Look,', 'See,', 'Here\'s the thing,', 'The point is,', 'What I\'m saying is,'],
-        mid: [', I mean,', ', you know,', ', like,', ', well,', ', actually,', ', basically,', ', honestly,', ', frankly,'],
-        transition: ['Anyway,', 'Anyhow,', 'At any rate,', 'In any case,', 'By the way,', 'That said,', 'Mind you,', 'Still,', 'Yet,', 'Even so,'],
+        start: ['Notably,', 'Importantly,', 'Crucially,', 'In practice,', 'In effect,', 'That said,', 'Still,', 'Yet,', 'Even so,', 'Admittedly,'],
+        mid: [', notably,', ', importantly,', ', in effect,', ', admittedly,'],
+        transition: ['Still,', 'Yet,', 'Even so,', 'That said,', 'In this context,'],
     };
 
-    const modified = sentences.map((sentence, index) => {
-        if (globalRandom.next() < 0.15 && sentence.length > 30) {
+    const modified = sentences.map((sentence) => {
+        // Skip sentences that already open with an opener (stacking guard)
+        if (/^\s*(Notably|Importantly|Significantly|Interestingly|Indeed|Clearly|Evidently|Obviously|Certainly|Undoubtedly|Surely|Frankly|Honestly|Admittedly|Arguably|In practice|In effect|In fact|That said|Still|Yet|Even so|Anyway|Basically|Actually|Well|So|Like|Look|See)\b/i.test(sentence)) {
+            return sentence;
+        }
+        if (globalRandom.next() < 0.10 && sentence.length > 30) {
             // Add at start of sentence
             if (globalRandom.next() < 0.6) {
-                const marker = globalRandom.choice(globalRandom.shuffle(discourseMarkers.start));
+                const marker = globalRandom.choice(discourseMarkers.start);
                 return `${marker} ${sentence.charAt(0).toLowerCase()}${sentence.slice(1)}`;
             }
-            // Add in middle
-            else if (sentence.includes(' ') && globalRandom.next() < 0.5) {
-                const words = sentence.split(' ');
-                const insertPoint = globalRandom.nextInt(Math.floor(words.length / 3), Math.floor(words.length * 2 / 3));
-                const marker = globalRandom.choice(globalRandom.shuffle(discourseMarkers.mid));
-                words.splice(insertPoint, 0, marker);
-                return words.join(' ');
+            // Add in middle — only after a comma (clause boundary), never mid-phrase
+            else if (sentence.includes(',') && globalRandom.next() < 0.5) {
+                const marker = globalRandom.choice(discourseMarkers.mid);
+                return sentence.replace(',', `${marker.replace(/^,/, '')},`.replace(',,', ','));
             }
         }
         return sentence;
@@ -2488,120 +2653,50 @@ function addConditionalReasoning(text: string): string {
     return modified.join('\n\n');
 }
 
-// Add interrupted sentence completion patterns
+// Add interrupted sentence patterns — ACADEMIC-SAFE.
+// FIXED: breakpoint was random mid-phrase ("must be, let me clarify, guided").
+// Now only interrupts after a comma (real clause boundary), and the casual
+// "let me clarify" pattern was removed.
 function addInterruptedSentences(text: string): string {
     const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
 
     const interruptionPatterns = [
-        { pattern: 'or rather', weight: 0.3 },
-        { pattern: 'more accurately', weight: 0.25 },
-        { pattern: 'that is to say', weight: 0.2 },
-        { pattern: 'in other words', weight: 0.25 },
-        { pattern: 'or perhaps', weight: 0.2 },
-        { pattern: 'better stated as', weight: 0.15 },
-        { pattern: 'let me clarify', weight: 0.15 },
+        'or rather',
+        'more accurately',
+        'that is to say',
+        'in other words',
+        'or perhaps',
+        'better stated as',
     ];
 
     const modified = sentences.map(sentence => {
-        if (sentence.length < 50 || globalRandom.next() > 0.12) return sentence;
+        if (sentence.length < 80 || !sentence.includes(',') || globalRandom.next() > 0.12) return sentence;
 
-        const words = sentence.split(' ');
-        if (words.length < 8) return sentence;
-
-        // Find a natural breakpoint (after a clause)
-        const breakPoint = globalRandom.nextInt(Math.floor(words.length / 3), Math.floor(words.length * 2 / 3));
-
-        if (breakPoint > 0 && breakPoint < words.length - 1) {
-            const pattern = globalRandom.choice(globalRandom.shuffle(interruptionPatterns));
-            const firstPart = words.slice(0, breakPoint).join(' ');
-            const secondPart = words.slice(breakPoint).join(' ');
-
-            // Create interrupted effect with em-dash or comma
-            if (globalRandom.next() < 0.6) {
-                return `${firstPart}—${pattern.pattern}, ${secondPart}`;
-            } else {
-                return `${firstPart}, ${pattern.pattern}, ${secondPart}`;
-            }
-        }
-
-        return sentence;
+        const pattern = globalRandom.choice(interruptionPatterns);
+        // Interrupt only at the first comma — a genuine clause boundary
+        return sentence.replace(',', `, ${pattern},`);
     });
 
     return modified.join(' ');
 }
 
-// Add metaphor and analogy weaving
+// addMetaphorAndAnalogy is DISABLED by design: it spliced random poetic
+// comparisons mid-sentence ("a gardener cultivating growth") which reads as
+// nonsense in academic text and hurts detector scores. Kept as a no-op so
+// existing pipeline call sites don't need changes.
 function addMetaphorAndAnalogy(text: string): string {
-    const metaphors: { [key: string]: string[] } = {
-        'process': ['journey', 'pathway', 'progression', 'unfolding', 'trajectory'],
-        'growth': ['blossoming', 'flowering', 'maturation', 'expansion', 'development'],
-        'decline': ['erosion', 'withering', 'diminishment', 'regression', 'deterioration'],
-        'understanding': ['grasping', 'seizing', 'capturing', 'embracing', 'penetrating'],
-        'complexity': ['labyrinth', 'tapestry', 'web', 'mosaic', 'intricate network'],
-        'clarity': ['light', 'illumination', 'beacon', 'clarity', 'crystalline'],
-        'foundation': ['bedrock', 'cornerstone', 'anchor', 'pillar', 'base'],
-        'support': ['scaffold', 'framework', 'buttress', 'backbone', 'infrastructure'],
-        'challenge': ['obstacle', 'hurdle', 'barrier', 'wall', 'summit'],
-        'breakthrough': ['breakthrough', 'watershed', 'turning point', 'leap', 'rupture'],
-    };
-
-    const analogies = [
-        'much like', 'similar to', 'akin to', 'analogous to', 'comparable to',
-        'as one might', 'as if', 'not unlike', 'in the same way that', 'just as',
-    ];
-
-    const sentences = text.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
-
-    const modified = sentences.map(sentence => {
-        // Only apply to longer sentences
-        if (sentence.length < 70 || globalRandom.next() > 0.15) return sentence;
-
-        // Find keywords that could use metaphorical enhancement
-        for (const [keyword, metaphorOptions] of Object.entries(metaphors)) {
-            if (sentence.toLowerCase().includes(keyword)) {
-                if (globalRandom.next() < 0.5) {
-                    // Add a metaphorical phrase
-                    const metaphor = globalRandom.choice(globalRandom.shuffle(metaphorOptions));
-                    const words = sentence.split(' ');
-                    const insertPoint = globalRandom.nextInt(Math.floor(words.length / 2), words.length - 2);
-                    words.splice(insertPoint, 0, `(much like a ${metaphor}),`);
-                    return words.join(' ');
-                }
-            }
-        }
-
-        // Add standalone analogy/comparison
-        if (globalRandom.next() < 0.3) {
-            const analogy = globalRandom.choice(globalRandom.shuffle(analogies));
-            const words = sentence.split(' ');
-            const insertPoint = globalRandom.nextInt(2, words.length - 3);
-
-            const comparisons = [
-                'a researcher exploring new territory',
-                'an explorer charting unknown waters',
-                'a craftsperson refining their technique',
-                'an architect designing a structure',
-                'a gardener cultivating growth',
-                'a musician finding harmony',
-                'a sculptor revealing form',
-                'a weaver creating patterns',
-            ];
-
-            const comparison = globalRandom.choice(globalRandom.shuffle(comparisons));
-            words.splice(insertPoint, 0, `${analogy} ${comparison},`);
-            return words.join(' ');
-        }
-
-        return sentence;
-    });
-
-    return modified.join(' ');
+    return text;
 }
 
 
 // Master function to apply all humanization techniques
+// IMPROVED: protect → strip AI tells → transform → restore → guardrail.
 function applyAdvancedHumanization(text: string, intensity: 'light' | 'medium' | 'heavy' = 'medium'): string {
-    let humanized = text;
+    const guard = protectSpans(text);
+    let humanized = guard.text;
+
+    // Always strip AI clichés first (all intensities — detectors key on these)
+    humanized = stripAITells(humanized);
 
     // Apply different levels of transformation based on intensity
     switch (intensity) {
@@ -2612,10 +2707,6 @@ function applyAdvancedHumanization(text: string, intensity: 'light' | 'medium' |
             humanized = rewriteFirstParagraph(humanized);
             humanized = rewriteConcludingParagraph(humanized);
             humanized = addDiscourseMarkers(humanized);
-            // Spelling and grammar errors DISABLED for clean output
-            // humanized = introduceSpellingMistakes(humanized, 'light');
-            // humanized = addGrammaticalErrors(humanized, 'light');
-            // Simplify complex terms in introduction and conclusion
             humanized = simplifyIntroductionAndConclusion(humanized);
             break;
 
@@ -2627,7 +2718,6 @@ function applyAdvancedHumanization(text: string, intensity: 'light' | 'medium' |
             humanized = addAcademicTransitions(humanized);
             humanized = addDiscourseMarkers(humanized);
             humanized = addConditionalReasoning(humanized);
-            humanized = addMetaphorAndAnalogy(humanized);
             humanized = varyPunctuation(humanized);
             humanized = addPersonalTouches(humanized);
             humanized = varyRhythm(humanized);
@@ -2636,24 +2726,18 @@ function applyAdvancedHumanization(text: string, intensity: 'light' | 'medium' |
             humanized = varySentenceComplexity(humanized, 'medium');
             humanized = addAcademicHedging(humanized);
             humanized = rewriteConcludingParagraph(humanized);
-            // Spelling and grammar errors DISABLED for clean output
-            // humanized = introduceSpellingMistakes(humanized, 'medium');
-            // humanized = addGrammaticalErrors(humanized, 'medium');
-            // Simplify complex terms in introduction and conclusion
             humanized = simplifyIntroductionAndConclusion(humanized);
             break;
 
         case 'heavy':
             // Heavy mode: maximum transformation without AI
-            // AGGRESSIVE PERPLEXITY + BURSTINESS
             humanized = paraphraseSentences(humanized, 'heavy');
-            humanized = aggressiveVocabularyShift(humanized);  // NEW: Extreme word variation
+            humanized = aggressiveVocabularyShift(humanized);
             humanized = rewriteFirstParagraph(humanized);
             humanized = restructureSentences(humanized, 'heavy');
             humanized = addAcademicTransitions(humanized);
             humanized = addDiscourseMarkers(humanized);
             humanized = addConditionalReasoning(humanized);
-            humanized = addMetaphorAndAnalogy(humanized);
             humanized = addInterruptedSentences(humanized);
             humanized = addCommaSplicing(humanized);
             humanized = addNaturalImperfections(humanized);
@@ -2665,23 +2749,37 @@ function applyAdvancedHumanization(text: string, intensity: 'light' | 'medium' |
             humanized = varyWordCountInSentences(humanized);
             humanized = addInterjections(humanized);
             humanized = varySentenceComplexity(humanized, 'heavy');
-            humanized = createFrequentSentenceBreaks(humanized, 'heavy');  // Aggressive sentence breaking
-            humanized = extremeBurstiness(humanized);  // NEW: Extreme sentence variation
+            humanized = createFrequentSentenceBreaks(humanized, 'heavy');
+            humanized = extremeBurstiness(humanized);
             humanized = addAcademicHedging(humanized);
-            humanized = rewriteConcludingParagraph(humanized);
-            // Spelling and grammar errors DISABLED for clean output
-            // humanized = introduceSpellingMistakes(humanized, 'heavy');
-            // humanized = addGrammaticalErrors(humanized, 'heavy');
-            // Simplify complex terms in introduction and conclusion
-            humanized = simplifyIntroductionAndConclusion(humanized);
+            // NOTE: heavy skips rewriteConcludingParagraph + simplification —
+            // both inject random sentences ("All things considered, ...") that
+            // break meaning on short texts.
             break;
     }
 
     // Remove repetitions BEFORE grammar fixes to clean up duplicates
     humanized = removeRepetitions(humanized);
 
+    // Dedup stacked openers across function boundaries ("Importantly,
+    // essentially, ..." / "evidently, obviously, ..."): keep the LAST
+    // (it carries the sentence's actual attachment point), drop earlier ones.
+    // Runs twice to collapse 3-deep stacks.
+    for (let pass = 0; pass < 2; pass++) {
+        humanized = humanized.replace(
+            /\b(Importantly|Essentially|Notably|Significantly|Interestingly|Indeed|Clearly|Evidently|Obviously|Certainly|Undoubtedly|Surely|Frankly|Honestly|Admittedly|Arguably|Fundamentally|Primarily|Specifically|In practice|In effect|In fact|After all|In any event|That said|Still|Yet|Even so|One might argue|As it turns out|Under certain conditions|In this context|From this perspective|To some extent|For the most part|In essence)\s*,\s*(?=[a-z][a-z\-']*(?:\s*,\s*)?\s*[A-Z])/g,
+            ''
+        );
+    }
+
     // ALWAYS apply grammar and spelling fixes at the end (after all transformations)
     humanized = fixGrammarAndSpelling(humanized);
+
+    // Restore protected spans (citations, URLs, quotes, figures)
+    humanized = guard.restore(humanized);
+
+    // Safety net: never return something wildly shorter/longer than input
+    humanized = enforceLengthGuardrail(text, humanized);
 
     return humanized;
 }
@@ -2717,92 +2815,102 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // TEMPORARILY DISABLED — Google API billing incident. Remove these two lines to re-enable.
-        return NextResponse.json({ error: 'Service temporarily unavailable. Please try again later.' }, { status: 503 });
-
         let processedText = text;
+
+        // Chunk long inputs so external API calls stay within token limits.
+        // Short texts take the fast path (single chunk = identical behavior).
+        const chunks = chunkBySentences(text, 2500);
+        const useChunking = chunks.length > 1;
+        if (useChunking) console.log(`Long input: processing in ${chunks.length} chunks`);
 
         // ============================================================================
         // STEP 1: BACK-TRANSLATION (for medium and heavy modes)
-        // This naturally paraphrases the text through translation chains
-        // Always use 'heavy' for maximum perplexity
+        // Graceful: if the Translate key is missing/fails, rule-based pipeline
+        // below still runs — output quality degrades slightly, never errors.
         // ============================================================================
         if (intensity === 'medium' || intensity === 'heavy') {
             console.log('Applying back-translation...');
-            // Force 'heavy' mode for back-translation to maximize perplexity
-            processedText = await backTranslate(text, 'heavy');
+            if (useChunking) {
+                const out: string[] = [];
+                for (const chunk of chunks) {
+                    out.push(await backTranslate(chunk, 'heavy'));
+                }
+                processedText = out.join(' ');
+            } else {
+                processedText = await backTranslate(text, 'heavy');
+            }
             console.log('Back-translation complete');
         }
 
         // ============================================================================
         // STEP 2: AI PROCESSING (only for light mode)
         // ============================================================================
-        // Only use AI for "light" mode
+        // Only use AI for "light" mode.
+        // Graceful fallback: if Gemini is unavailable, run the rule-based
+        // light pipeline instead of erroring — user still gets an output.
         if (intensity === 'light') {
-            // Check if API key is configured
-            if (!process.env.GEMINI_API_KEY) {
-                return NextResponse.json(
-                    { error: 'API key not configured for light mode. Please add GEMINI_API_KEY to .env.local or use medium/heavy mode.' },
-                    { status: 500 }
-                );
-            }
-
-            // Craft the humanization prompt for light mode
-            const prompt = `You are an expert text humanizer. Your task is to rewrite the following text to make it sound more natural and human-written while preserving the original meaning and maintaining a professional academic tone.
+            if (process.env.GEMINI_API_KEY) {
+                try {
+                    const parts = useChunking ? chunks : [text];
+                    const aiOut: string[] = [];
+                    for (const part of parts) {
+                        // Craft the humanization prompt for light mode
+                        const prompt = `You are an expert text humanizer. Rewrite the text below to sound natural and human-written while preserving the original meaning and a professional academic tone.
 
 Guidelines:
 - Remove overly formal or robotic language
 - Use more varied sentence structures
 - Add natural transitions and flow
 - Keep the same core message and facts
-- Make it sound like a real person wrote it
-- Maintain professional and academic tone
-- Avoid repetitive phrases like "it is important to note" or "studies show"
 - Vary sentence length for better rhythm
+- NEVER add typos or grammar errors; output must be clean
+- Preserve citations, quotes, numbers, URLs exactly
 
 Original text:
-${text}
+${part}
 
 Rewrite this text to sound more human and natural while keeping it professional:`;
 
-            // Use the REST API directly with v1beta endpoint and gemini-flash-latest model
-            const response = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${process.env.GEMINI_API_KEY}`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        contents: [
+                        // Use the REST API directly with v1beta endpoint and gemini-flash-latest model
+                        const response = await fetch(
+                            `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${process.env.GEMINI_API_KEY}`,
                             {
-                                parts: [
-                                    {
-                                        text: prompt,
-                                    },
-                                ],
-                            },
-                        ],
-                    }),
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    contents: [{ parts: [{ text: prompt }] }],
+                                }),
+                            }
+                        );
+
+                        if (!response.ok) {
+                            const errorData = await response.json().catch(() => ({}));
+                            console.error('API Error:', errorData);
+                            throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+                        }
+
+                        const data = await response.json();
+
+                        // Extract the humanized text from the response
+                        const aiHumanizedText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+                        if (!aiHumanizedText) {
+                            throw new Error('No text generated from API');
+                        }
+
+                        aiOut.push(aiHumanizedText.trim());
+                    }
+                    processedText = aiOut.join(' ');
+                } catch (err) {
+                    console.warn('Gemini light-mode failed, falling back to rule-based:', err);
+                    processedText = text; // rule-based pipeline below still runs
                 }
-            );
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error('API Error:', errorData);
-                throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+            } else {
+                console.log('No GEMINI_API_KEY — using rule-based light mode');
+                processedText = text;
             }
-
-            const data = await response.json();
-
-            // Extract the humanized text from the response
-            const aiHumanizedText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-
-            if (!aiHumanizedText) {
-                throw new Error('No text generated from API');
-            }
-
-            processedText = aiHumanizedText.trim();
         }
 
         // ============================================================================
@@ -2818,34 +2926,51 @@ Rewrite this text to sound more human and natural while keeping it professional:
         );
 
         // ============================================================================
-        // STEP 4: AGGRESSIVE HUMANIZATION - Break AI patterns (OPTIMIZED FOR 80%+)
+        // STEP 4: AGGRESSIVE HUMANIZATION — intensity-aware (was: same max
+        // treatment for ALL intensities, which mangled light-mode output).
         // ============================================================================
         console.log('Applying aggressive humanization techniques...');
 
-        // CRITICAL: Add perplexity and burstiness FIRST (key metrics for human detection)
-        finalHumanizedText = addPerplexity(finalHumanizedText);
-        finalHumanizedText = addBurstiness(finalHumanizedText);
-
-        // Apply balanced techniques to ALL intensities for better human scores
-        finalHumanizedText = addConversationalTone(finalHumanizedText);
-        finalHumanizedText = addMoreContractions(finalHumanizedText);
-        finalHumanizedText = breakPerfectStructures(finalHumanizedText);
-        finalHumanizedText = varySentenceBeginnings(finalHumanizedText);
-        finalHumanizedText = addNaturalRedundancy(finalHumanizedText);
-        finalHumanizedText = varyWordCountInSentences(finalHumanizedText);
-        finalHumanizedText = varyRhythm(finalHumanizedText);
-
-        // Add more natural variations
-        finalHumanizedText = addFillerWords(finalHumanizedText);
-        finalHumanizedText = addPersonalTouches(finalHumanizedText);
-        finalHumanizedText = addThinkingPatterns(finalHumanizedText);
-        finalHumanizedText = addFlowVariations(finalHumanizedText);
-        finalHumanizedText = addNaturalImperfections(finalHumanizedText);
-
-        // Add incomplete thoughts for ALL intensities (not just medium/heavy)
         if (intensity === 'light') {
+            // Light: gentle touch only — preserve meaning & polish
+            finalHumanizedText = addPerplexity(finalHumanizedText);
+            finalHumanizedText = addMoreContractions(finalHumanizedText);
+            finalHumanizedText = varySentenceBeginnings(finalHumanizedText);
+            finalHumanizedText = addNaturalRedundancy(finalHumanizedText);
+        } else if (intensity === 'medium') {
+            // Medium: balanced bypass + readability
+            finalHumanizedText = addPerplexity(finalHumanizedText);
+            finalHumanizedText = addBurstiness(finalHumanizedText);
+            finalHumanizedText = addConversationalTone(finalHumanizedText);
+            finalHumanizedText = addMoreContractions(finalHumanizedText);
+            finalHumanizedText = breakPerfectStructures(finalHumanizedText);
+            finalHumanizedText = varySentenceBeginnings(finalHumanizedText);
+            finalHumanizedText = addNaturalRedundancy(finalHumanizedText);
+            finalHumanizedText = varyWordCountInSentences(finalHumanizedText);
+            finalHumanizedText = varyRhythm(finalHumanizedText);
+            finalHumanizedText = addFillerWords(finalHumanizedText);
+            finalHumanizedText = addPersonalTouches(finalHumanizedText);
+            finalHumanizedText = addThinkingPatterns(finalHumanizedText);
+            finalHumanizedText = addFlowVariations(finalHumanizedText);
+            finalHumanizedText = addNaturalImperfections(finalHumanizedText);
             finalHumanizedText = addIncompleteThoughts(finalHumanizedText);
-        } else if (intensity === 'medium' || intensity === 'heavy') {
+            finalHumanizedText = addInterjections(finalHumanizedText);
+        } else {
+            // Heavy: maximum bypass
+            finalHumanizedText = addPerplexity(finalHumanizedText);
+            finalHumanizedText = addBurstiness(finalHumanizedText);
+            finalHumanizedText = addConversationalTone(finalHumanizedText);
+            finalHumanizedText = addMoreContractions(finalHumanizedText);
+            finalHumanizedText = breakPerfectStructures(finalHumanizedText);
+            finalHumanizedText = varySentenceBeginnings(finalHumanizedText);
+            finalHumanizedText = addNaturalRedundancy(finalHumanizedText);
+            finalHumanizedText = varyWordCountInSentences(finalHumanizedText);
+            finalHumanizedText = varyRhythm(finalHumanizedText);
+            finalHumanizedText = addFillerWords(finalHumanizedText);
+            finalHumanizedText = addPersonalTouches(finalHumanizedText);
+            finalHumanizedText = addThinkingPatterns(finalHumanizedText);
+            finalHumanizedText = addFlowVariations(finalHumanizedText);
+            finalHumanizedText = addNaturalImperfections(finalHumanizedText);
             finalHumanizedText = addIncompleteThoughts(finalHumanizedText);
             finalHumanizedText = addInterjections(finalHumanizedText);
         }
@@ -2853,38 +2978,22 @@ Rewrite this text to sound more human and natural while keeping it professional:
         console.log('Aggressive humanization complete');
 
         // ============================================================================
-        // STEP 5: FINAL PARAPHRASING - Polish the text with AI (OpenAI or Gemini)
-        // NOTE: Skipped for medium and heavy modes to avoid making text too perfect
+        // STEP 5: FINAL POLISH — clean grammar (typo injection removed: it hurt
+        // quality and addGrammaticalErrors() was a no-op anyway). Light mode may
+        // still use AI paraphrase when a key is configured; medium/heavy skip it
+        // (it makes text too "perfect" / AI-like).
         // ============================================================================
-        console.log('Applying final paraphrasing...');
-
-        // Skip paraphrasing for medium and heavy modes (it makes text too AI-like)
-        const skipParaphrasing = intensity === 'medium' || intensity === 'heavy';
-        finalHumanizedText = await paraphraseWithFallback(finalHumanizedText, skipParaphrasing);
-
-        console.log('Final paraphrasing complete');
-
-        // ============================================================================
-        // STEP 6: GRAMMAR AND SPELLING ERRORS - MODERATE
-        // ============================================================================
-        // Add minimal errors for natural human-like text
-        // Apply to all modes with varying intensity
-
-        console.log('Adding subtle natural errors...');
-
-        // Add minimal spelling mistakes with increased rates for authenticity
         if (intensity === 'light') {
-            // Very minimal for light mode
-            finalHumanizedText = introduceSpellingMistakes(finalHumanizedText, 'light');
-        } else if (intensity === 'medium') {
-            finalHumanizedText = introduceSpellingMistakes(finalHumanizedText, 'light');
-            finalHumanizedText = addGrammaticalErrors(finalHumanizedText, 'light');
-        } else if (intensity === 'heavy') {
-            finalHumanizedText = introduceSpellingMistakes(finalHumanizedText, 'medium');
-            finalHumanizedText = addGrammaticalErrors(finalHumanizedText, 'medium');
+            finalHumanizedText = await paraphraseWithFallback(finalHumanizedText, false);
         }
 
-        console.log('Natural errors added');
+        // Final cleanup: fix any grammar/spacing damage from transforms,
+        // strip leftover AI clichés, enforce sane output length.
+        finalHumanizedText = fixGrammarAndSpelling(finalHumanizedText);
+        finalHumanizedText = stripAITells(finalHumanizedText);
+        finalHumanizedText = enforceLengthGuardrail(text, finalHumanizedText);
+
+        console.log('Final polish complete');
 
         // Return the humanized text
         return NextResponse.json({
